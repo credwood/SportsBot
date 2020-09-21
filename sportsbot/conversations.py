@@ -12,7 +12,7 @@ class get_conversations:
         self.conversations = self.find_conversation(search_terms,filter_terms)
 
 
-    def get_thread(self,tweet,api, language):
+    def get_thread(self,tweet,api):
         """
         this is an unfortunately hacky function because there's no convenient way to get replies to tweets.
         It's necessary to use the API's search function to find tweets whose `in_reply_to_status_id` field matches the
@@ -65,7 +65,7 @@ class get_conversations:
 
             return subsequent_tweets
 
-        return find_first_tweet(reply_status,language)+ [(tweet.user.screen_name, tweet.full_text)] + get_subsequent(tweet,api,language)
+        return find_first_tweet(reply_status)+ [(tweet.user.screen_name, tweet.full_text)] + get_subsequent(tweet,api)
 
 
 
