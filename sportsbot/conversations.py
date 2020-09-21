@@ -1,5 +1,5 @@
 import tweepy
-from createapi import create_api
+from api import create_api
 import time
 import random
 
@@ -9,7 +9,7 @@ class get_conversations:
         self.filters_terms=filter_terms
         self.search_terms=search_terms
         self.language=language
-        self.conversations = self.find_conversation(search_terms,filter_terms,language)
+        self.conversations = self.find_conversation(search_terms,filter_terms)
 
 
     def get_thread(self,tweet,api, language):
@@ -21,7 +21,7 @@ class get_conversations:
 
         reply_status = tweet.in_reply_to_status_id
 
-        def find_first_tweet(reply_status, language, prev_tweets=[]):
+        def find_first_tweet(reply_status, prev_tweets=[]):
             """
             this function gets tweets prior to original input
             this isn't done. needs to match up better with the previous threads
@@ -41,7 +41,7 @@ class get_conversations:
                 print(e)
                 return prev_tweets[::-1]
 
-        def get_subsequent(tweet, api, language, subsequent_tweets=[]):
+        def get_subsequent(tweet, api, subsequent_tweets=[]):
             """
             this function gets subsequent tweets
             """
