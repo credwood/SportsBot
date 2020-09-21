@@ -69,7 +69,7 @@ class get_conversations:
 
 
 
-    def find_conversation(self,name, terms, language):
+    def find_conversation(self,name, terms):
         api = create_api()
         conversations=[]
         subtract_terms = ''
@@ -78,7 +78,7 @@ class get_conversations:
         while True:
             try:
                 tweet = c.next()
-                conversations.append(self.get_thread(tweet,api,language))
+                conversations.append(self.get_thread(tweet,api))
             except tweepy.TweepError as e:
                 print(e)
             except StopIteration:
