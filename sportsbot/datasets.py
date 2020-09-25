@@ -3,10 +3,12 @@
 Tools for writing to jsonlines files and processing
 `Conversation` and `Tweet` objects.
 """
-from dataclasses import dataclass
 import random
+from dataclasses import dataclass
+from dataclasses_json import dataclass_json
 import jsonlines
 
+@dataclass_json
 @dataclass
 class Tweet:
     """
@@ -20,6 +22,7 @@ class Tweet:
     language: str
     date_time: str
 
+@dataclass_json
 @dataclass
 class Conversation:
     """
@@ -37,7 +40,7 @@ def _save_data(data, file):
     writes `Conversation` objects to a jsonlines file
     """
     with jsonlines.open(file, mode='w') as writer:
-        writer.write(data)
+        writer.write(data.to_json())
 
 
 def _prepare_testing_set(shots, data_to_test,topic,labels):
