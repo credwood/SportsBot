@@ -29,7 +29,7 @@ class Conversation:
     has been run through the model, it will also hold a
     a dictionary of statistics
     """
-    thread: list
+    thread: dict
     model_statistics: dict
 
 def _save_data(data, file):

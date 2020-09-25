@@ -3,7 +3,7 @@ This module connects to Twitter's API using Tweepy
 and returns up to 20 conversations fulfilling init parameters
 """
 import os
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 import tweepy
 from .datasets import _save_data, Tweet, Conversation
 
@@ -127,7 +127,7 @@ def _find_conversation(name, terms, api):
     for each tweet to find and return a full conversation.
 
     """
-    conversations_list = []
+    conversations_dict = OrderedDict()
     subtract_terms = ''
     for term in terms:
         subtract_terms += ' -'+term
@@ -135,12 +135,14 @@ def _find_conversation(name, terms, api):
                         q=name+subtract_terms+" -filter:retweets",
                         timeout=999999,
                         tweet_mode='extended').items(20)
+    i = 1
     while True:
         try:
             tweet = found_tweets.next()
-            conversations_list.append(_get_thread(tweet,api))
+            conversations_dict[i]=_get_thread(tweet,api)
+            i += 1
         except tweepy.TweepError as exception:
             print(exception)
         except StopIteration:
             break
-    return conversations_list
+    return conversations_dict
