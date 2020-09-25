@@ -7,7 +7,7 @@ from dataclasses import dataclass
 import random
 import jsonlines
 
-@dataclasses
+@dataclass
 class Tweet:
     """
     `Tweet` object created for each
@@ -20,7 +20,7 @@ class Tweet:
     language: str
     date_time: str
 
-@dataclasses
+@dataclass
 class Conversation:
     """
     Each `Conversation` object
