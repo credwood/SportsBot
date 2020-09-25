@@ -3,7 +3,7 @@
 Tools for writing to jsonlines files and processing
 `Conversation` and `Tweet` objects.
 """
-import dataclasses
+from dataclasses import dataclass
 import random
 import jsonlines
 
