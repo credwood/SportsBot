@@ -7,27 +7,22 @@ A tool for streaming Twitter arguments/discussions and using a few-shot-trained 
 To run this in google colab, you must first use colab-env to set up a vars.env file with Twitter API keys. The following steps are from [This tutorial] (https://colab.research.google.com/github/apolitical/colab-env/blob/master/colab_env_testbed.ipynb#scrollTo=2rz2V-k1BZY9) will take you through setting it up.
 
     1. To install, run 
-    ```sh
-    ! pip install colab-env --upgrade
-    ``` 
 
+    ! pip install colab-env --upgrade
+ 
     2. Import:
 
-    ```sh
     import colab_env
-    ``` 
-
+     
     Importing the module will set everything up; it create vars.env if it doesn't already exist and if it does, it will load your environment variables. If your drive isn't alreay mounted, it will walk you through authenticating your colab session, and your account's google drive should be mounted.
 
     3. To add or change the keys run: 
 
-    ```sh
     colab_env.envvar_handler.add_env("KEY", "value", overwrite=True)
-    ```
 
-   Make sure to name them: "AKEY" (API Key), "ASECRETKEY" (API Secret Key), "ATOKEN" (access token), "ASECRET" (secret access token), use:
+    Make sure to name them: "AKEY" (API Key), "ASECRETKEY" (API Secret Key), "ATOKEN" (access token), "ASECRET" (secret access token), use:
+    
      
-
 If for some reason your google drive hasn't been mounted, run:
 
 ```sh
