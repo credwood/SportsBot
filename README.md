@@ -2,13 +2,13 @@
 
 A tool for streaming Twitter arguments/discussions and using a few-shot-trained GPT-2 model to classify which side of the argument a (for now) randomly chosen participant is on.
 
-## run
+## Get Started
 
 To run this in google colab, you must first use colab-env to set up a vars.env file with Twitter API keys. The following steps are from [This tutorial] (https://colab.research.google.com/github/apolitical/colab-env/blob/master/colab_env_testbed.ipynb#scrollTo=2rz2V-k1BZY9) will take you through setting it up.
 
     1. To install, run 
     ```sh
-    !pip install colab-env --upgrade
+    ! pip install colab-env --upgrade
     ``` 
 
     2. Import:
@@ -44,7 +44,7 @@ mkdir a project folder, then cd into that folder and run:
 cd into SportsBot and install the dependencies by running:
 
 ```sh
-!pip install -r requirements.txt
+! pip install -r requirements.txt
 ```
 The environment in which this module was deveoped was a pyenv virtualenv 3.7.6.
 
@@ -59,7 +59,7 @@ data = get_conversations(
             )
 ```
 
-This function requires a search phrase and a list of words or phrases that should not appear in the conversation* and a file path to save jsonlines file containing the conversations. The default file will be called output.jsonl and will be created in your project folder.
+This function requires a search phrase, a list of words or phrases that should not appear in the conversation* and a file path to the conversation objects. The default file will be called output.jsonl and will be created in your project folder.
 
 To test the classifier, you will need to create a list of labels for the conversations, and then you can import and run `few_shot_train`:
 
@@ -72,6 +72,6 @@ training_data = few_shot_train(
                     jsonline_file='my_output.jsonl')
 ```
 
-the function will return and add the statistics for each conversation will be added to each `Conversation` dataclass.
+The function will return the statistics, and add them to each conversation object.
 
-*for now the filter if only applied to the initial tweet found in the conversation.
+*For now the filter is only applied to the initial tweet found in the conversation.
