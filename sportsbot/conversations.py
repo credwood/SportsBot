@@ -2,18 +2,29 @@
 This module connects to Twitter's API using Tweepy
 and returns up to 20 conversations fulfilling init parameters
 """
-import random
+import os
+from collections import defaultdict
 import tweepy
-#import time
-from sportsconfig import akey, asecretkey, atoken, asecret
+from .datasets import _save_data, Tweet, Conversation
 
-def create_api():
+def get_conversations(search_terms, filter_terms, jsonlines_file='output.jsonl'):
+    """
+    Collects up to 20 relevant conversations using Tweepy's wrapper for Twitter's API,
+    processes them into dataclasses and stored by jsonlines file.
+    """
+    api = _create_api()
+    conversations = _find_conversation(search_terms, filter_terms, api)
+    _save_data(conversations,jsonlines_file)
+    return conversations
+
+def _create_api():
     """
     Wrapper for tweepy's API method
     """
+    akey, asecretkey = os.environ["AKEY"],os.environ["ASECRETKEY"]
+    atoken, asecret = os.environ["ATOKEN"],os.environ["ASECRET"]
     auth = tweepy.OAuthHandler(akey, asecretkey)
     auth.set_access_token(atoken, asecret)
-
     api = tweepy.API(auth, wait_on_rate_limit=True,
         wait_on_rate_limit_notify=True)
     try:
@@ -22,128 +33,114 @@ def create_api():
         raise exception
     return api
 
-class GetConversations:
+def _get_thread(tweet,api):
     """
-    Stores search parameters and processed conversations
+    calls `_find_first_tweet` and `_get_subsequent`, concatenates
+    the returned values with the initial tweet and returns a full
+    conversation.
     """
+    reply_status = tweet.in_reply_to_status_id
+    before_initial_tweet = _find_first_tweet(reply_status,api)
+    initial_tweet = [Tweet(
+                            tweet.id,
+                            tweet.user.screen_name,
+                            tweet.user.name,
+                            tweet.full_text,
+                            tweet.lang,
+                            tweet.created_at
+                          )
+                    ]
+    after_initial_tweet = _get_subsequent(tweet,api)
+    full_conv = before_initial_tweet + initial_tweet + after_initial_tweet
+    stat_dict = defaultdict()
+    conversation_class = Conversation(full_conv, stat_dict)
+    return conversation_class
 
-    def __init__(self,search_terms, filter_terms, language='en'):
-        self.filters_terms=filter_terms
-        self.search_terms=search_terms
-        self.language=language
-        self.conversations = self.find_conversation(search_terms,filter_terms)
-    def get_thread(self,tweet,api):
-        """
-        this is an unfortunately hacky function because there's no convenient way
-        to get replies to tweets. It's necessary to use the API's search function to find
-        tweets whose `in_reply_to_status_id` field matches the initial tweet's `id` field.
-        Getting previous tweets is simply recursion on the `in_reply_to_status_id` field.
-        """
+def _find_first_tweet(reply_status, api, prev_tweets=None):
+    """
+    This function gets tweets prior to initial tweet
 
+    """
+    prev_tweets = [] if prev_tweets is None else prev_tweets
+    if reply_status is None:
+        return prev_tweets[::-1]
+    try:
+        tweet = api.get_status(reply_status, tweet_mode='extended',wait_on_rate_limit=True)
+
+        #maybe the language condition isn't necessary?
+        #if status.lang == language:
+        prev_tweets.append(Tweet(
+                                tweet.id,
+                                tweet.user.screen_name,
+                                tweet.user.name,
+                                tweet.full_text,
+                                tweet.lang,
+                                tweet.created_at
+                                )
+                            )
         reply_status = tweet.in_reply_to_status_id
+        return _find_first_tweet(reply_status,api,prev_tweets)
 
-        def find_first_tweet(reply_status, prev_tweets=None):
-            """
-            this function gets tweets prior to original input
+    except tweepy.TweepError as exception:
+        print(exception)
+        return prev_tweets[::-1]
 
-            """
-            if prev_tweets is None:
-                prev_tweets = []
-            if reply_status is None:
-                return prev_tweets[::-1]
-            try:
-                status = api.get_status(reply_status, tweet_mode='extended',wait_on_rate_limit=True)
-
-                #maybe the language condition isn't necessary?
-                #if status.lang == language:
-                prev_tweets.append((status.user.screen_name, status.full_text))
-                reply_status = status.in_reply_to_status_id
-                return find_first_tweet(reply_status,prev_tweets)
-
-            except tweepy.TweepError as exception:
-                print(exception)
-                return prev_tweets[::-1]
-
-        def get_subsequent(tweet, api, subsequent_tweets=None):
-            """
-            this function gets subsequent tweets
-            """
-            if subsequent_tweets is None:
-                subsequent_tweets = []
-            tweet_id = tweet.id
-            user_name = tweet.user.screen_name
-
-            replies = tweepy.Cursor(api.search, q='to:'+user_name+' -filter:retweets',
-                since_id=tweet_id, max_id=None, tweet_mode='extended').items()
-
-            while True:
-                try:
-                    reply = replies.next()
-                    if reply.in_reply_to_status_id == tweet_id:
-                        subsequent_tweets.append((reply.user.screen_name, reply.full_text))
-                        return get_subsequent(reply, api,subsequent_tweets)
-
-                except tweepy.TweepError as exception:
-                    print(exception)
-                except StopIteration:
-                    break
-
-            return subsequent_tweets
-
-        before_initial_tweet = find_first_tweet(reply_status)
-        initial_tweet = [(tweet.user.screen_name, tweet.full_text)]
-        subsequent_tweets = get_subsequent(tweet,api)
-        return before_initial_tweet + initial_tweet + subsequent_tweets
-
-
-
-    def find_conversation(self,name, terms):
-        """
-        Initial search for tweets. Will return up to 20 conversations
-        fulfilling the search criteria
-        """
-        api = create_api()
-        conversations_list=[]
-        subtract_terms = ''
-        for term in terms:
-            subtract_terms += ' -'+term
-        found_tweets = tweepy.Cursor(api.search,
-                            q=name+subtract_terms+" -filter:retweets",
-                            timeout=999999,
-                            tweet_mode='extended').items(20)
-        while True:
-            try:
-                tweet = found_tweets.next()
-                conversations_list.append(self.get_thread(tweet,api))
-            except tweepy.TweepError as exception:
-                print(exception)
-            except StopIteration:
-                break
-        return conversations_list
-
-
-def process_tweets(topic):
+def _get_subsequent(tweet, api, subsequent_tweets=None):
     """
-    puts conversations into a list with a question for the
-    model to answer at the end
+    This function gets subsequent tweets. There's no convenient way to get replies
+    to tweets. It's necessary to use the API's search function to find tweets whose
+    `in_reply_to_status_id` field matches the initial tweet's `id` field.
     """
-    processed_tweets = []
-    for conversation in conversations.conversations:
-        if conversation is None:
-            continue
-        names = set([])
-        for tup in conversation:
-            names.add(tup[0])
-        name = random.choice(list(names))
-        temp = [f"{tup[0]}: {tup[1]}" for tup in conversation]
-        temp.append(f"\n--\nQuestion: Does {name} like {topic}? \nAnswer:")
-        processed_tweets.append(temp)
-    return processed_tweets
+    subsequent_tweets = [] if subsequent_tweets is None else subsequent_tweets
+    tweet_id = tweet.id
+    user_name = tweet.user.screen_name
 
+    replies = tweepy.Cursor(api.search, q='to:'+user_name+' -filter:retweets',
+        since_id=tweet_id, max_id=None, tweet_mode='extended').items()
 
-#will get conversations about the lakers, but without the keywords/phrases in the list.
-if __name__ == '__main__':
-    filter_out = ['race','racist','china','chinese','"black lives matter"', 'police', '"blue lives matter"']
-    conversations = GetConversations('lakers',filter_out)
-    sample = process_tweets("lakers")
-    print(sample[0])
+    while True:
+        try:
+            reply = replies.next()
+            if reply.in_reply_to_status_id == tweet_id:
+                subsequent_tweets.append(Tweet(
+                                                reply.id,
+                                                reply.user.screen_name,
+                                                reply.user.name,
+                                                reply.full_text,
+                                                reply.lang,
+                                                reply.created_at
+                                                )
+                                            )
+                return _get_subsequent(reply, api,subsequent_tweets)
+
+        except tweepy.TweepError as exception:
+            print(exception)
+        except StopIteration:
+            break
+
+    return subsequent_tweets
+
+def _find_conversation(name, terms, api):
+    """
+    Initial search for tweets. Will find up to 20 tweets
+    fulfilling the search criteria. This function calls `_get_thread`
+    for each tweet to find and return a full conversation.
+
+    """
+    conversations_list = []
+    subtract_terms = ''
+    for term in terms:
+        subtract_terms += ' -'+term
+    found_tweets = tweepy.Cursor(api.search,
+                        q=name+subtract_terms+" -filter:retweets",
+                        timeout=999999,
+                        tweet_mode='extended').items(20)
+    while True:
+        try:
+            tweet = found_tweets.next()
+            conversations_list.append(_get_thread(tweet,api))
+        except tweepy.TweepError as exception:
+            print(exception)
+        except StopIteration:
+            break
+    return conversations_list
