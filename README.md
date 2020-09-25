@@ -14,13 +14,13 @@ To run this in google colab, you must first use colab-env to set up a vars.env f
 
     import colab_env
      
-    Importing the module will set everything up; it create vars.env if it doesn't already exist and if it does, it will load your environment variables. If your drive isn't alreay mounted, it will walk you through authenticating your colab session, and your account's google drive should be mounted.
+Importing the module will set everything up; it create vars.env if it doesn't already exist and if it does, it will load your environment variables. If your drive isn't alreay mounted, it will walk you through authenticating your colab session, and your account's google drive should be mounted.
 
     3. To add or change the keys run: 
 
     colab_env.envvar_handler.add_env("KEY", "value", overwrite=True)
 
-    Make sure to name them: "AKEY" (API Key), "ASECRETKEY" (API Secret Key), "ATOKEN" (access token), "ASECRET" (secret access token), use:
+Make sure to name them: "AKEY" (API Key), "ASECRETKEY" (API Secret Key), "ATOKEN" (access token), "ASECRET" (secret access token)
     
      
 If for some reason your google drive hasn't been mounted, run:
