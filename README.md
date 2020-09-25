@@ -51,7 +51,7 @@ The environment in which this module was deveoped was a pyenv virtualenv 3.7.6.
 Once the dependencies are installed, cd into sportsbot and you can get started by:
 
 ```sh
-from conversations import get_conversations
+from sportsbot.conversations import get_conversations
 
 data = get_conversations(
             "my search phrase", 
@@ -64,7 +64,7 @@ This function requires a search phrase and a list of words or phrases that shoul
 To test the classifier, you will need to create a list of labels for the conversations, and then you can import and run `few_shot_train`:
 
 ```sh
-from inference import few_shot_train
+from sportsbot.inference import few_shot_train
 training_data = few_shot_train(
                     data, 
                     my_labels, 
