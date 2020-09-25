@@ -2,7 +2,7 @@
 
 A tool for streaming Twitter arguments/discussions and using a few-shot-trained GPT-2 model to classify which side of the argument a (for now) randomly chosen participant is on.
 
-## Get Started
+## Getting Started
 
 To run this in google colab, you must first use colab-env to set up a vars.env file with Twitter API keys. The following steps are from [This tutorial] (https://colab.research.google.com/github/apolitical/colab-env/blob/master/colab_env_testbed.ipynb#scrollTo=2rz2V-k1BZY9) will take you through setting it up.
 
