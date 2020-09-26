@@ -13,6 +13,8 @@ setup(
         'scipy==1.4.1',
         'tensorflow==2.3.0',
         'transformers==3.2.0',
-        'tweepy==3.9.0'
+        'tweepy==3.9.0',
+        'jsonlines==1.2.0',
+        'dataclasses_json==0.5.2'
     ],
 )
