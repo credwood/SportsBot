@@ -45,20 +45,17 @@ def _save_data(data, file):
 
 def _prepare_testing_set(shots, data_to_test,topic,few_shot_labels):
     templated_prompts = _few_shot_template(shots, topic, few_shot_labels)
-    test_convs = []
-    for conv in data_to_test:
-        names = set([])
-        conversation_str = ''
-        for tweet in conv.thread:
-            conversation_str += tweet.content + '\n'
-            names.add(tweet.user_handle)
-        name = random.choice(list(names))
-        end_prompt = f"\n--\nQuestion: Does {name} like {topic}? \nAnswer:"
-        test_convs.append(templated_prompts+ conversation_str + end_prompt)
+    test_convs = _few_shot_template(data_to_test,
+                                        topic,
+                                        few_shot_labels,
+                                        templated_prompts=templated_prompts,
+                                        test_data=True
+                                        )
     return test_convs
 
-def _few_shot_template(shots, topic, few_shot_labels):
+def _few_shot_template(shots, topic, few_shot_labels, templated_prompts=None, test_data=False):
     accumulate_prompts = ''
+    test_convs = []
     for index, shot in enumerate(shots):
         conversation_thread = shot.thread
         names = set([])
@@ -67,10 +64,15 @@ def _few_shot_template(shots, topic, few_shot_labels):
             conversation_str += tweet.content + '\n'
             names.add(tweet.user_handle)
         name = random.choice(list(names))
-        end_prompt = f"\n--\nQuestion: Does {name} like {topic}?\nAnswer: {few_shot_labels[index]}"
-        conversation_str = conversation_str + end_prompt
-        accumulate_prompts += conversation_str +"\n\nnext dialogue\n"
-    return accumulate_prompts
+        if test_data:
+            end_prompt = f"\n--\nQuestion: Does {name} like {topic}? \nAnswer:"
+            test_convs.append(templated_prompts+ conversation_str + end_prompt)
+            return test_convs
+        else:
+            end_prompt = f"\n--\nQuestion: Does {name} like {topic}?\nAnswer: {few_shot_labels[index]}"
+            conversation_str = conversation_str + end_prompt
+            accumulate_prompts += conversation_str +"\n\nnext dialogue\n"
+            return accumulate_prompts
 
 def _add_stats(conversation,stats,json_file):
     with jsonlines.open(json_file) as reader, jsonlines.open(json_file, mode='w') as writer:

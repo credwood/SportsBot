@@ -3,7 +3,6 @@ This module connects to Twitter's API using Tweepy
 and returns up to 20 conversations based on user's parameters
 """
 import os
-from collections import defaultdict
 import tweepy
 from .datasets import _save_data, Tweet, Conversation
 
@@ -75,8 +74,8 @@ def _get_thread(tweet,api):
                     ]
     after_initial_tweet = _get_subsequent(tweet,api)
     full_conv = before_initial_tweet + initial_tweet + after_initial_tweet
-    stat_dict = defaultdict()
-    conversation_class = Conversation(full_conv, stat_dict)
+    stat_lst = []
+    conversation_class = Conversation(full_conv, stat_lst)
     return conversation_class
 
 def _find_first_tweet(reply_status, api, prev_tweets=None):
@@ -110,8 +109,9 @@ def _find_first_tweet(reply_status, api, prev_tweets=None):
 
 def _get_subsequent(tweet, api, subsequent_tweets=None):
     """
-    This function gets subsequent tweets. It's necessary to use the API's search function to find tweets whose
-    `in_reply_to_status_id` field matches the initial tweet's `id` field.
+    This function gets subsequent tweets. It's necessary to use the API's
+    search function to find tweets whose `in_reply_to_status_id` field
+    matches the initial tweet's `id` field.
     """
     subsequent_tweets = [] if subsequent_tweets is None else subsequent_tweets
     tweet_id = tweet.id
