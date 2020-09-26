@@ -22,7 +22,7 @@ def _create_api():
     except Exception as exception:
         raise exception
     return api
-    
+
 def get_conversations(search_terms, filter_terms, jsonlines_file='output.jsonl'):
     """
     Collects up to 20 relevant conversations using Tweepy's wrapper for Twitter's API,
@@ -32,6 +32,30 @@ def get_conversations(search_terms, filter_terms, jsonlines_file='output.jsonl')
     conversations = _find_conversation(search_terms, filter_terms, api)
     _save_data(conversations,jsonlines_file)
     return conversations
+
+def _find_conversation(name, terms, api):
+    """
+    Initial search for tweets. Will find up to 20 tweets
+    fulfilling the search criteria. This function calls `_get_thread`
+    for each tweet to find and return a full conversation.
+    """
+    conversations_lst = []
+    subtract_terms = ''
+    for term in terms:
+        subtract_terms += ' -'+term
+    found_tweets = tweepy.Cursor(api.search,
+                        q=name+subtract_terms+" -filter:retweets",
+                        timeout=999999,
+                        tweet_mode='extended').items(20)
+    while True:
+        try:
+            tweet = found_tweets.next()
+            conversations_lst.append(_get_thread(tweet,api))
+        except tweepy.TweepError as exception:
+            print(exception)
+        except StopIteration:
+            break
+    return conversations_lst
 
 def _get_thread(tweet,api):
     """
@@ -119,29 +143,3 @@ def _get_subsequent(tweet, api, subsequent_tweets=None):
             break
 
     return subsequent_tweets
-
-def _find_conversation(name, terms, api):
-    """
-    Initial search for tweets. Will find up to 20 tweets
-    fulfilling the search criteria. This function calls `_get_thread`
-    for each tweet to find and return a full conversation.
-    """
-    conversations_lst = []
-    subtract_terms = ''
-    for term in terms:
-        subtract_terms += ' -'+term
-    found_tweets = tweepy.Cursor(api.search,
-                        q=name+subtract_terms+" -filter:retweets",
-                        timeout=999999,
-                        tweet_mode='extended').items(20)
-    i = 1
-    while True:
-        try:
-            tweet = found_tweets.next()
-            conversations_lst.append(_get_thread(tweet,api))
-            i += 1
-        except tweepy.TweepError as exception:
-            print(exception)
-        except StopIteration:
-            break
-    return conversations_lst
