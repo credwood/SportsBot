@@ -56,7 +56,7 @@ data = get_conversations(
 
 This function requires a search phrase, a list of words and/or phrases that should not appear in the conversation* and a path to the file storing the `Conversation` objects. The default file is `output.jsonl`.
 
-To test the classifier, you will need to create a list of labels for the conversations, choose training conversations and then you can import and run `few_shot_train`:
+To test the classifier, you will need to create a list of labels for the training and testing sets. Import and run `few_shot_train`:
 
 ```sh
 from sportsbot.inference import few_shot_train
@@ -65,6 +65,7 @@ training_data = few_shot_train(
                     my_labels, 
                     topic,
                     training_conversations,
+                    few_shot_labels,
                     jsonlines_file='my_output.jsonl')
 ```
 

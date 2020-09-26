@@ -44,8 +44,8 @@ def _save_data(data, file):
             writer.write(conversation.to_json())
 
 
-def _prepare_testing_set(shots, data_to_test,topic,labels):
-    templated_prompts = _few_shot_template(shots, topic, labels)
+def _prepare_testing_set(shots, data_to_test,topic,few_shot_labels):
+    templated_prompts = _few_shot_template(shots, topic, few_shot_labels)
     test_convs = []
     for conv in data_to_test:
         names = set([])
@@ -58,7 +58,7 @@ def _prepare_testing_set(shots, data_to_test,topic,labels):
         test_convs.append(templated_prompts+ conversation_str + end_prompt)
     return test_convs
 
-def _few_shot_template(shots, topic, labels):
+def _few_shot_template(shots, topic, few_shot_labels):
     accumulate_prompts = ''
     for index, shot in enumerate(shots):
         conversation_thread = shot.thread
@@ -68,7 +68,7 @@ def _few_shot_template(shots, topic, labels):
             conversation_str += tweet.content + '\n'
             names.add(tweet.user_handle)
         name = random.choice(list(names))
-        end_prompt = f"\n--\nQuestion: Does {name} like {topic}?\nAnswer: {labels[index]}"
+        end_prompt = f"\n--\nQuestion: Does {name} like {topic}?\nAnswer: {few_shot_labels[index]}"
         conversation_str = conversation_str + end_prompt
         accumulate_prompts += conversation_str +"\n\nnext dialogue\n"
     return accumulate_prompts
