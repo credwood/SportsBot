@@ -23,7 +23,7 @@ def few_shot_train(data,
                     training_conversations,
                     few_shot_labels,
                     jsonlines_file='output.jsonl',
-                    tokenizer=tokenizer_instantiate ,
+                    tokenizer=tokenizer_instantiate,
                     model=model_instantiate
                     ):
     """

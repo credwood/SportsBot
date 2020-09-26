@@ -43,7 +43,6 @@ def _save_data(data, file):
         with jsonlines.open(file, mode='w') as writer:
             writer.write(conversation.to_json())
 
-
 def _prepare_testing_set(shots, data_to_test,topic,few_shot_labels):
     templated_prompts = _few_shot_template(shots, topic, few_shot_labels)
     test_convs = []
