@@ -14,9 +14,9 @@ To run this in google colab, you must first use colab-env to set up a vars.env f
     ```sh
     import colab_env
      ```
-Importing the module will set everything up; it create vars.env if it doesn't already exist and if it does, it will load your environment variables. If your drive isn't alreay mounted, it will walk you through authenticating your colab session, and your account's google drive should be mounted.
+Importing the module will set everything up; it create vars.env if it doesn't already exist and if it does, it will load your environment variables. If your drive isn't alreay mounted, it will walk you through authenticating your colab session, after which your account's google drive should be mounted.
 
-3. To add or change the keys run: 
+3. To add or change the keys, run: 
     ```sh
     colab_env.envvar_handler.add_env("KEY", "value", overwrite=True)
     ```
@@ -54,9 +54,9 @@ data = get_conversations(
             )
 ```
 
-This function requires a search phrase, a list of words or phrases that should not appear in the conversation* and a file path to the conversation objects. The default file will be called output.jsonl and will be created in your project folder.
+This function requires a search phrase, a list of words and/or phrases that should not appear in the conversation* and a path to the file storing the `Conversation` objects. The default file is `output.jsonl`.
 
-To test the classifier, you will need to create a list of labels for the conversations, and then you can import and run `few_shot_train`:
+To test the classifier, you will need to create a list of labels for the conversations, choose training conversations and then you can import and run `few_shot_train`:
 
 ```sh
 from sportsbot.inference import few_shot_train
