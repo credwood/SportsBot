@@ -76,7 +76,6 @@ def _few_shot_template(shots, topic, few_shot_labels, templated_prompts=None, te
 def _add_stats(conversation,stats,json_file):
     with jsonlines.open(json_file) as reader, jsonlines.open(json_file, mode='w') as writer:
         for obj in reader:
-            if obj.from_json(obj)==conversation:
-                obj = obj.from_json(obj)
-                obj.model_statistics = stats
-                writer.write(obj.to_json())
+            if obj==conversation.to_json():
+                conversation.model_statistics = stats
+                writer.write(conversation.to_json())
