@@ -26,7 +26,7 @@ def _create_api():
 def get_conversations(search_terms, filter_terms, jsonlines_file='output.jsonl'):
     """
     Collects up to 20 relevant conversations using Tweepy's wrapper for Twitter's API,
-    processes them into dataclasses and stored by jsonlines file.
+    processes them into dataclasses and stores them with jsonlines file.
     """
     api = _create_api()
     conversations = _find_conversation(search_terms, filter_terms, api)
@@ -37,7 +37,7 @@ def _find_conversation(name, terms, api):
     """
     Initial search for tweets. Will find up to 20 tweets
     fulfilling the search criteria. This function calls `_get_thread`
-    for each tweet to find and return a full conversation.
+    for each tweet which returns a full conversation.
     """
     conversations_lst = []
     subtract_terms = ''
@@ -60,8 +60,7 @@ def _find_conversation(name, terms, api):
 def _get_thread(tweet,api):
     """
     calls `_find_first_tweet` and `_get_subsequent`, concatenates
-    the returned values with the initial tweet and returns a full
-    conversation.
+    these values with the initial tweet and returns the full thread in order.
     """
     reply_status = tweet.in_reply_to_status_id
     before_initial_tweet = _find_first_tweet(reply_status,api)
@@ -111,8 +110,7 @@ def _find_first_tweet(reply_status, api, prev_tweets=None):
 
 def _get_subsequent(tweet, api, subsequent_tweets=None):
     """
-    This function gets subsequent tweets. There's no convenient way to get replies
-    to tweets. It's necessary to use the API's search function to find tweets whose
+    This function gets subsequent tweets. It's necessary to use the API's search function to find tweets whose
     `in_reply_to_status_id` field matches the initial tweet's `id` field.
     """
     subsequent_tweets = [] if subsequent_tweets is None else subsequent_tweets

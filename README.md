@@ -27,11 +27,11 @@ Importing the module will set everything up; it create vars.env if it doesn't al
 
 3. To add or change the API keys, run:
 
-    ```sh
-    colab_env.envvar_handler.add_env("KEY", "value", overwrite=True)
-    ```
+```sh
+colab_env.envvar_handler.add_env("KEY", "value", overwrite=True)
+```
 
-The module required that you name them: "AKEY" (API Key), "ASECRETKEY" (API Secret Key), "ATOKEN" (access token), "ASECRET" (secret access token)
+The module requires that you name them: "AKEY" (API Key), "ASECRETKEY" (API Secret Key), "ATOKEN" (access token), "ASECRET" (secret access token)
 
 Change into a folder on your drive and run:
 
