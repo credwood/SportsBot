@@ -70,7 +70,9 @@ training_data = few_shot_train(
                     topic,
                     training_conversations,
                     few_shot_labels,
-                    jsonlines_file='my_output.jsonl')
+                    jsonlines_file_in='my_output.jsonl',
+                    jsonlines_file_out='output.jsonl',
+                    )
 ```
 
 The function will return the tokens and SoftMax values of the 15 most likely answers; it will also add them to each conversation object. The function will also return the batch accuracy.
