@@ -54,7 +54,7 @@ data = get_conversations(
             )
 ```
 
-This function requires a search phrase, a list of words and/or phrases that should not appear in the conversation* and a path to the file storing the `Conversation` objects. The default file is `output.jsonl`.
+This function requires a search phrase, a list of words and/or phrases that should not appear in the conversation* and a path to the file storing the `Conversation` objects. The default file is `output.jsonl`, which will be in the `sportsbot` folder.
 
 To test the classifier, you will need to create a list of labels for the training and testing sets. Import and run `few_shot_train`:
 
