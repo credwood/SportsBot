@@ -39,8 +39,9 @@ def _save_data(data, file):
     """
     writes `Conversation` objects to a jsonlines file
     """
-    with jsonlines.open(file, mode='w') as writer:
-        writer.write(data.to_json())
+    for conversation in data:
+        with jsonlines.open(file, mode='w') as writer:
+            writer.write(conversation.to_json())
 
 
 def _prepare_testing_set(shots, data_to_test,topic,labels):
