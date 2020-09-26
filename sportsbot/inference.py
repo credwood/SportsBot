@@ -73,6 +73,7 @@ def _calculate_accuracy(labels, model_answers):
 
 def _top_softmax(prob_dict, tokenizer, num_tokens=15):
     result = []
+    num_tokens = min(len(prob_dict), num_tokens)
     while num_tokens:
         index = np.where(prob_dict==max(prob_dict))
         token_softmax = prob_dict[index]
