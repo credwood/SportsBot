@@ -49,6 +49,7 @@ def few_shot_train(data,
         top_softmax = _top_softmax(predicted_prob,tokenizer)
         confidence[f"{i+1}_test"] = top_softmax
         _add_stats(conversations[i],top_softmax,jsonlines_file)
+    print(len(model_answers))
     accuracy = _calculate_accuracy(labels, model_answers)
     statistics = {
                     "accuracy": accuracy,
