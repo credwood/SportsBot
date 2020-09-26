@@ -61,18 +61,17 @@ def _few_shot_template(shots, topic, few_shot_labels, templated_prompts=None, te
         names = set([])
         conversation_str = ''
         for tweet in conversation_thread:
-            conversation_str += tweet.content + '\n'
+            conversation_str += f"{tweet.user_handle}: "+tweet.content + '\n'
             names.add(tweet.user_handle)
         name = random.choice(list(names))
         if test_data:
             end_prompt = f"\n--\nQuestion: Does {name} like {topic}? \nAnswer:"
             test_convs.append(templated_prompts+ conversation_str + end_prompt)
-            return test_convs
         else:
             end_prompt = f"\n--\nQuestion: Does {name} like {topic}?\nAnswer: {few_shot_labels[index]}"
             conversation_str = conversation_str + end_prompt
             accumulate_prompts += conversation_str +"\n\nnext dialogue\n"
-            return accumulate_prompts
+    return test_convs if test_data else accumulate_prompts
 
 def _add_stats(conversation,stats,json_file):
     with jsonlines.open(json_file) as reader, jsonlines.open(json_file, mode='w') as writer:
