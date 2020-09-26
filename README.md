@@ -65,7 +65,7 @@ training_data = few_shot_train(
                     my_labels, 
                     topic,
                     training_conversations,
-                    jsonline_file='my_output.jsonl')
+                    jsonlines_file='my_output.jsonl')
 ```
 
 The function will return the statistics, and add them to each conversation object.
