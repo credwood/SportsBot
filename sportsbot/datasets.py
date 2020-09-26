@@ -48,6 +48,7 @@ def _prepare_testing_set(shots, data_to_test,topic,labels):
     templated_prompts = _few_shot_template(shots, topic, labels)
     test_convs = []
     for conv in data_to_test:
+        conv = conv.from_json(conv)
         names = set([])
         conversation_str = ''
         for tweet in conv.thread:
@@ -61,6 +62,7 @@ def _prepare_testing_set(shots, data_to_test,topic,labels):
 def _few_shot_template(shots, topic, labels):
     accumulate_prompts = ''
     for index, shot in enumerate(shots):
+        shot = shot.from_json(shot)
         conversation_thread = shot.thread
         names = set([])
         conversation_str = ''
@@ -76,7 +78,7 @@ def _few_shot_template(shots, topic, labels):
 def _add_stats(conversation,stats,json_file):
     with jsonlines.open(json_file) as reader, jsonlines.open(json_file, mode='w') as writer:
         for obj in reader:
-            obj = obj.from_json()
+            obj = obj.from_json(obj)
             if obj==conversation:
                 obj.model_statistics = stats
             writer.write(obj.to_json())
