@@ -7,16 +7,6 @@ from collections import defaultdict
 import tweepy
 from .datasets import _save_data, Tweet, Conversation
 
-def get_conversations(search_terms, filter_terms, jsonlines_file='output.jsonl'):
-    """
-    Collects up to 20 relevant conversations using Tweepy's wrapper for Twitter's API,
-    processes them into dataclasses and stored by jsonlines file.
-    """
-    api = _create_api()
-    conversations = _find_conversation(search_terms, filter_terms, api)
-    _save_data(conversations,jsonlines_file)
-    return conversations
-
 def _create_api():
     """
     Wrapper for tweepy's API method
@@ -32,6 +22,16 @@ def _create_api():
     except Exception as exception:
         raise exception
     return api
+    
+def get_conversations(search_terms, filter_terms, jsonlines_file='output.jsonl'):
+    """
+    Collects up to 20 relevant conversations using Tweepy's wrapper for Twitter's API,
+    processes them into dataclasses and stored by jsonlines file.
+    """
+    api = _create_api()
+    conversations = _find_conversation(search_terms, filter_terms, api)
+    _save_data(conversations,jsonlines_file)
+    return conversations
 
 def _get_thread(tweet,api):
     """
