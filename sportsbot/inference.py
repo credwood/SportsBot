@@ -17,7 +17,7 @@ model_instantiate = TFGPT2LMHeadModel.from_pretrained("gpt2-large",
                                         return_dict=True
                                         )
 
-def few_shot_train(data,
+def few_shot_train(test_data,
                     labels,
                     topic,
                     training_conversations,
@@ -37,7 +37,7 @@ def few_shot_train(data,
     #probabilities_dict = defaultdict()
     model_answers = []
     confidence = defaultdict()
-    conversations = _prepare_testing_set(training_conversations, data, topic, few_shot_labels)
+    conversations = _prepare_testing_set(training_conversations, test_data, topic, few_shot_labels)
     for i, tweets in enumerate(conversations):
         input_ids = tokenizer.encode(tweets,return_tensors='tf')
         output = model(input_ids)
@@ -48,8 +48,8 @@ def few_shot_train(data,
         model_answers.append(max_word)
         top_softmax = _top_softmax(predicted_prob,tokenizer)
         confidence[f"{i+1}_test"] = top_softmax
-        training_conversations[i].model_statistics = top_softmax
-    _add_stats(training_conversations,jsonlines_file_out)
+        test_data[i].model_statistics = top_softmax
+    _save_data(training_conversations,jsonlines_file_out)
     accuracy = _calculate_accuracy(labels, model_answers)
     statistics = {
                     "accuracy": accuracy,
