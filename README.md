@@ -18,7 +18,7 @@ To run this in google colab, you must first use colab-env to set up a vars.env f
     import colab_env
      ```
 
-Importing the module will set everything up; it create vars.env if it doesn't already exist and if it does, it will load your environment variables. It will walk you through authenticating your colab session, after which your account's google drive should be mounted, make sure to check:
+Importing the module will set everything up; it create vars.env if it doesn't already exist and if it does, it will load your environment variables. It will walk you through authenticating your colab session, after which your account's drive should be mounted. If you want to work in a directory on your drive, run and cd into:
 
 ```sh
 from google.colab import drive
@@ -33,7 +33,7 @@ colab_env.envvar_handler.add_env("KEY", "value", overwrite=True)
 
 The module requires that you name them: "AKEY" (API Key), "ASECRETKEY" (API Secret Key), "ATOKEN" (access token), "ASECRET" (secret access token)
 
-Change into a folder on your drive and run:
+Clone:
 
 ```sh
 ! git clone https://github.com/credwood/SportsBot.git
@@ -46,7 +46,7 @@ cd into SportsBot and install the dependencies:
 ```
 (The environment in which this module was deveoped was a pyenv virtualenv 3.7.6.)
 
-Once the dependencies are installed, cd into sportsbot and you can get started by:
+Once the dependencies are installed, cd into sportsbot and you can get started with:
 
 ```sh
 from sportsbot.conversations import get_conversations
@@ -57,7 +57,7 @@ data = get_conversations(
             )
 ```
 
-This function requires a search phrase, a list of words and/or phrases that should not appear in the conversation* and a path to the file storing the `Conversation` objects. The default file is `output.jsonl`, which will be in the `sportsbot` folder.
+This function requires a search phrase, a list of words and/or phrases that should not appear in the conversation* and a path to the file in which to store the `Conversation` objects. The default file is `output.jsonl`, which will be in the `sportsbot` folder.
 
 To test the classifier, you will need to create a list of labels for the training and testing sets. Import and run `few_shot_train`:
 
@@ -73,6 +73,6 @@ training_data = few_shot_train(test_data,
                     )
 ```
 
-The function will return the tokens and SoftMax values of the 15 most likely answers, and it will add them to each conversation object and save these updated objects in a new output file. The function will also return the batch accuracy, SoftMax values and a list of model vs actual answers.
+The function will return the tokens and SoftMax values of the 15 most likely answers, and it will add them to each `Conversation` object which will be saved in a new output file. The function will also return the batch accuracy, SoftMax values and a list of (model predictions vs labels).
 
 *For now the filter is only applied to the initial tweet found in the conversation.
