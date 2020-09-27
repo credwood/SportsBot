@@ -48,7 +48,7 @@ def few_shot_train(test_data,
         model_answers.append(max_word)
         top_softmax = _top_softmax(predicted_prob,tokenizer)
         confidence[f"{i+1}_test"] = top_softmax
-        test_data[i].model_statistics = top_softmax
+        test_data[i].model_statistics = str(top_softmax)
     _save_data(test_data,jsonlines_file_out)
     accuracy = _calculate_accuracy(labels, model_answers)
     statistics = {
