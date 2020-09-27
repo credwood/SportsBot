@@ -20,10 +20,10 @@ To run this in google colab, you must first use colab-env to set up a vars.env f
 
 Importing the module will set everything up; it create vars.env if it doesn't already exist and if it does, it will load your environment variables. It will walk you through authenticating your colab session, after which your account's google drive should be mounted, make sure to check:
 
-    ```sh
-    from google.colab import drive
-    drive.mount(‘/content/gdrive’)
-    ```
+```sh
+from google.colab import drive
+drive.mount(‘/content/gdrive’)
+```
 
 3. To add or change the API keys, run:
 
@@ -64,16 +64,15 @@ To test the classifier, you will need to create a list of labels for the trainin
 ```sh
 from sportsbot.inference import few_shot_train
 
-training_data = few_shot_train(
-                    data, 
-                    my_labels, 
+training_data = few_shot_train(test_data,
+                    test_labels,
                     topic,
                     training_conversations,
                     few_shot_labels,
-                    jsonlines_file_out='stats_addd_output.jsonl',
+                    jsonlines_file_out='add_stats_output.jsonl'
                     )
 ```
 
-The function will return the tokens and SoftMax values of the 15 most likely answers, and it will add them to each conversation object and save these updated objects in a new output file. The function will also return the batch accuracy.
+The function will return the tokens and SoftMax values of the 15 most likely answers, and it will add them to each conversation object and save these updated objects in a new output file. The function will also return the batch accuracy, SoftMax values and a list of model vs actual answers.
 
 *For now the filter is only applied to the initial tweet found in the conversation.
