@@ -72,10 +72,3 @@ def _few_shot_template(shots, topic, few_shot_labels, templated_prompts=None, te
             conversation_str = conversation_str + end_prompt
             accumulate_prompts += conversation_str +"\n\nnext dialogue\n"
     return test_convs if test_data else accumulate_prompts
-
-def _add_stats(conversation,stats,json_file_in, json_file_out):
-    with jsonlines.open(json_file_in) as reader, jsonlines.open(json_file_out, mode='w') as writer:
-        for obj in reader:
-            if obj==conversation.to_json():
-                obj["model_statistics"] = stats
-            writer.write(obj)

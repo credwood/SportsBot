@@ -6,7 +6,7 @@ from collections import defaultdict
 from scipy.special import softmax
 import numpy as np
 from transformers import TFGPT2LMHeadModel, GPT2Tokenizer
-from .datasets import _prepare_testing_set, _add_stats
+from .datasets import _prepare_testing_set, _save_data
 
 tokenizer_instantiate = GPT2Tokenizer.from_pretrained("gpt2-large")
 tokenizer_instantiate.pad_token = tokenizer_instantiate.eos_token
@@ -22,8 +22,7 @@ def few_shot_train(data,
                     topic,
                     training_conversations,
                     few_shot_labels,
-                    jsonlines_file_in='output.jsonl',
-                    jsonlines_file_out='updated_output.jsonl',
+                    jsonlines_file_out='stats_addd_output.jsonl',
                     tokenizer=tokenizer_instantiate,
                     model=model_instantiate
                     ):
@@ -49,7 +48,8 @@ def few_shot_train(data,
         model_answers.append(max_word)
         top_softmax = _top_softmax(predicted_prob,tokenizer)
         confidence[f"{i+1}_test"] = top_softmax
-        _add_stats(training_conversations[i],top_softmax,jsonlines_file_in, jsonlines_file_out)
+        training_conversations[i].model_statistics = top_softmax
+    _add_stats(training_conversations,jsonlines_file_out)
     accuracy = _calculate_accuracy(labels, model_answers)
     statistics = {
                     "accuracy": accuracy,

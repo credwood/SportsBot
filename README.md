@@ -70,11 +70,10 @@ training_data = few_shot_train(
                     topic,
                     training_conversations,
                     few_shot_labels,
-                    jsonlines_file_in='my_output.jsonl',
-                    jsonlines_file_out='output.jsonl',
+                    jsonlines_file_out='stats_addd_output.jsonl',
                     )
 ```
 
-The function will return the tokens and SoftMax values of the 15 most likely answers; it will also add them to each conversation object. The function will also return the batch accuracy.
+The function will return the tokens and SoftMax values of the 15 most likely answers, and it will add them to each conversation object and save these updated objects in a new output file. The function will also return the batch accuracy.
 
 *For now the filter is only applied to the initial tweet found in the conversation.
