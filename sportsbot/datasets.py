@@ -33,7 +33,7 @@ class Conversation:
     a dictionary of statistics
     """
     thread: list
-    model_statistics: dict
+    model_statistics: list
 
 def _save_data(data, file):
     """
