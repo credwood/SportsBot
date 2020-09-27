@@ -46,7 +46,7 @@ cd into SportsBot and install the dependencies:
 ```
 (The environment in which this module was deveoped was a pyenv virtualenv 3.7.6.)
 
-Once the dependencies are installed, cd into sportsbot and you can get started with:
+Once the dependencies are installed, you can get started with:
 
 ```sh
 from sportsbot.conversations import get_conversations
