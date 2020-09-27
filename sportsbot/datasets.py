@@ -30,7 +30,7 @@ class Conversation:
     will hold a list of `Tweet` objects,
     making up a conversation thread. If the conversation
     has been run through the model, it will also hold a
-    a dictionary of statistics
+    a list of the 15 tokens with highest SoftMax values
     """
     thread: list
     model_statistics: list
