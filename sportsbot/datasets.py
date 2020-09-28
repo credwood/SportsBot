@@ -84,4 +84,4 @@ def _few_shot_template(shots, topic, few_shot_labels, templated_prompts=None, te
             end_prompt = f"\n--\nQuestion: Does {name} like {topic}?\nAnswer: {few_shot_labels[index]}"
             conversation_str = conversation_str + end_prompt
             accumulate_prompts += conversation_str +"\n\nnext dialogue\n"
-    return (test_convs, conv_prompt) if test_data else accumulate_prompts
+    return (test_convs, test_template) if test_data else accumulate_prompts

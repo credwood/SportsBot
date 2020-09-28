@@ -38,7 +38,7 @@ def few_shot_train(test_data,
     model_answers = []
     templated_conversations = []
     confidence = defaultdict()
-    conversations, prompt = _prepare_testing_set(training_conversations,
+    conversations, prompts = _prepare_testing_set(training_conversations,
                                                     test_data, topic, few_shot_labels)
     for i, tweets in enumerate(conversations):
         input_ids = tokenizer.encode(tweets,return_tensors='tf')
@@ -51,7 +51,7 @@ def few_shot_train(test_data,
         top_softmax = _top_softmax(predicted_prob,tokenizer)
         confidence[f"{i+1}_test"] = top_softmax
         test_data[i].model_statistics = top_softmax
-        templated_conversations.append(ConversationPrompt(prompt[i], top_softmax))
+        templated_conversations.append(ConversationPrompt(prompts[i], top_softmax))
     _save_data(templated_conversations,jsonlines_file_out)
     accuracy = _calculate_accuracy(test_labels, model_answers)
     statistics = {
