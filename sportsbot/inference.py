@@ -38,7 +38,7 @@ def few_shot_train(test_data,
     model_answers = []
     templated_conversations = []
     confidence = defaultdict()
-    conversations, prompt = _prepare_testing_set(training_conversations, 
+    conversations, prompt = _prepare_testing_set(training_conversations,
                                                     test_data, topic, few_shot_labels)
     for i, tweets in enumerate(conversations):
         input_ids = tokenizer.encode(tweets,return_tensors='tf')
