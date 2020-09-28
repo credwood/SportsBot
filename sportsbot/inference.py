@@ -6,7 +6,7 @@ from collections import defaultdict
 from scipy.special import softmax
 import numpy as np
 from transformers import TFGPT2LMHeadModel, GPT2Tokenizer
-from .datasets import _prepare_testing_set, _save_data
+from .datasets import _prepare_testing_set, _save_data, ConversationPrompt
 
 tokenizer_instantiate = GPT2Tokenizer.from_pretrained("gpt2-large")
 tokenizer_instantiate.pad_token = tokenizer_instantiate.eos_token
@@ -36,8 +36,10 @@ def few_shot_train(test_data,
     """
     #probabilities_dict = defaultdict()
     model_answers = []
+    templated_conversations = []
     confidence = defaultdict()
-    conversations = _prepare_testing_set(training_conversations, test_data, topic, few_shot_labels)
+    conversations, prompt = _prepare_testing_set(training_conversations, 
+                                                    test_data, topic, few_shot_labels)
     for i, tweets in enumerate(conversations):
         input_ids = tokenizer.encode(tweets,return_tensors='tf')
         output = model(input_ids)
@@ -48,8 +50,9 @@ def few_shot_train(test_data,
         model_answers.append(max_word)
         top_softmax = _top_softmax(predicted_prob,tokenizer)
         confidence[f"{i+1}_test"] = top_softmax
-        test_data[i].model_statistics = [{token: str(prob)} for token, prob in top_softmax]
-    _save_data(test_data,jsonlines_file_out)
+        test_data[i].model_statistics = top_softmax
+        templated_conversations.append(ConversationPrompt(prompt[i], top_softmax))
+    _save_data(templated_conversations,jsonlines_file_out)
     accuracy = _calculate_accuracy(test_labels, model_answers)
     statistics = {
                     "accuracy": accuracy,
@@ -79,7 +82,7 @@ def _top_softmax(prob_dict, tokenizer, num_tokens=15):
         index = np.where(prob_dict==max(prob_dict))
         token_softmax = prob_dict[index]
         token = tokenizer.decode(index)
-        result.append((token, token_softmax))
+        result.append({token: str(token_softmax)})
         prob_dict[index] = float("-inf")
         num_tokens -= 1
     return result

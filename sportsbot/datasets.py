@@ -35,6 +35,16 @@ class Conversation:
     thread: list
     model_statistics: list
 
+@dataclass_json
+@dataclass
+class ConversationPrompt:
+    """
+    Dataclass for holding the templated conversation
+    and its model statistics
+    """
+    text: list
+    model_statistics: list
+
 def _save_data(data, file):
     """
     writes `Conversation` objects to a jsonlines file
@@ -56,6 +66,7 @@ def _prepare_testing_set(shots, data_to_test,topic,few_shot_labels):
 def _few_shot_template(shots, topic, few_shot_labels, templated_prompts=None, test_data=False):
     accumulate_prompts = ''
     test_convs = []
+    test_template = []
     for index, shot in enumerate(shots):
         conversation_thread = shot.thread
         names = set([])
@@ -66,9 +77,11 @@ def _few_shot_template(shots, topic, few_shot_labels, templated_prompts=None, te
         name = random.choice(list(names))
         if test_data:
             end_prompt = f"\n--\nQuestion: Does {name} like {topic}? \nAnswer: "
-            test_convs.append(templated_prompts+ conversation_str + end_prompt)
+            conv_prompt = conversation_str + end_prompt
+            test_template.append(conv_prompt)
+            test_convs.append(templated_prompts + conv_prompt)
         else:
             end_prompt = f"\n--\nQuestion: Does {name} like {topic}?\nAnswer: {few_shot_labels[index]}"
             conversation_str = conversation_str + end_prompt
             accumulate_prompts += conversation_str +"\n\nnext dialogue\n"
-    return test_convs if test_data else accumulate_prompts
+    return (test_convs, conv_prompt) if test_data else accumulate_prompts
