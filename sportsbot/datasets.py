@@ -42,7 +42,7 @@ class ConversationPrompt:
     Dataclass for holding the templated conversation
     and its model statistics
     """
-    text: list
+    text: str
     model_statistics: list
 
 def _save_data(data, file):
