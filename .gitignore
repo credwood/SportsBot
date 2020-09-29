@@ -1,0 +1,7 @@
+.vscode
+*.pyc
+*checkpoint.ipynb
+__pycache__
+dist/
+gpt_2_simple.egg-info/
+build/
