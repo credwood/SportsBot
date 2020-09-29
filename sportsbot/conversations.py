@@ -69,7 +69,7 @@ def _get_thread(tweet,api):
                             tweet.user.name,
                             tweet.full_text,
                             tweet.lang,
-                            tweet.created_at
+                            tweet.created_at,
                             tweet.user.followers_count,
                             tweet.user.friends_count,
                             tweet.user.description
