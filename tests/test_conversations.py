@@ -1,5 +1,5 @@
 import unittest
-import numpy as np
+#import numpy as np
 from sportsbot.conversations import get_conversations
 
 class TestTweepyStream(unittest.TestCase):
@@ -10,4 +10,3 @@ class TestTweepyStream(unittest.TestCase):
         filter_out = []
         search = "I"
         get_conversations(search, filter_out)
-
