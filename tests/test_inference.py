@@ -21,7 +21,7 @@ class TestInferenceFunctions(unittest.TestCase):
     def test_calc_accuracy(self):
         labels = [" no", " yes", " yes"]
         model_ans = [" no", " !", " I"]
-        self.assertAlmostEqual(_calculate_accuracy(labels, model_ans), 0.33)
+        self.assertAlmostEqual(_calculate_accuracy(labels, model_ans), 0.3333333333333333333)
 
     def test_few_shot_train(self, model=model, tokenizer=tokenizer):
         topic = "lakers"

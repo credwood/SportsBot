@@ -11,7 +11,10 @@ class TestJsonlinesFunctions(unittest.TestCase):
                                         "dooog",
                                         "@TheHoopGenius I heard someone say AD better than Giannis 😂😂😂",
                                         "en",
-                                        "Tue Mar 29 08:11:25 +0000 2011"
+                                        "Tue Mar 29 08:11:25 +0000 2011",
+                                        122,
+                                        1,
+                                        "dummy profile"
                                         )],empty_list)
         _save_data([test_conv_obj], "read_write_test.jsonl")
 

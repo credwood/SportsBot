@@ -9,7 +9,7 @@ class TestTweepyStream(unittest.TestCase):
     def test_get_convs(self):
         filter_out= ['"bad words', "bad", "words"]
         search = '"grazing goats"'
-        get_conversations(search, filter)
+        get_conversations(search, filter_out)
     
     def test_likely_long_convs(self):
         filter_out = []
