@@ -8,23 +8,29 @@ import numpy as np
 from transformers import TFGPT2LMHeadModel, GPT2Tokenizer
 from .datasets import _prepare_testing_set, _save_data, ConversationPrompt
 
-tokenizer_instantiate = GPT2Tokenizer.from_pretrained("gpt2-large")
-tokenizer_instantiate.pad_token = tokenizer_instantiate.eos_token
+def download_model_tokenizer():
+    """
+    for now there will not be an option
+    for which model/tokenizer to use
+    """
+    tokenizer_instantiate = GPT2Tokenizer.from_pretrained("gpt2-large")
+    tokenizer_instantiate.pad_token = tokenizer_instantiate.eos_token
 
-# add the EOS token as PAD token to avoid warnings
-model_instantiate = TFGPT2LMHeadModel.from_pretrained("gpt2-large",
-                                        pad_token_id=tokenizer_instantiate .eos_token_id,
-                                        return_dict=True
-                                        )
+    # add the EOS token as PAD token to avoid warnings
+    model_instantiate = TFGPT2LMHeadModel.from_pretrained("gpt2-large",
+                                            pad_token_id=tokenizer_instantiate .eos_token_id,
+                                            return_dict=True
+                                            )
+    return model_instantiate, tokenizer_instantiate
 
 def few_shot_train(test_data,
                     test_labels,
                     topic,
                     training_conversations,
                     few_shot_labels,
-                    jsonlines_file_out='add_stats_output.jsonl',
-                    tokenizer=tokenizer_instantiate,
-                    model=model_instantiate
+                    tokenizer,
+                    model,
+                    jsonlines_file_out='add_stats_output.jsonl'
                     ):
     """
     Function for experimentation. Takes a few labeled records for training,
@@ -76,13 +82,6 @@ def _calculate_accuracy(labels, model_answers):
     return correct/len(labels)
 
 def _top_softmax(prob_dict, tokenizer, num_tokens=15):
-    result = []
     num_tokens = min(len(prob_dict), num_tokens)
-    while num_tokens:
-        index = np.where(prob_dict==max(prob_dict))
-        token_softmax = prob_dict[index]
-        token = tokenizer.decode(index)
-        result.append({token: str(token_softmax)})
-        prob_dict[index] = float("-inf")
-        num_tokens -= 1
-    return result
+    sorted_indices = np.argsort(prob_dict)
+    return [{tokenizer(index): str(prob_dict[index])} for index in sorted_indices[:num_tokens]]

@@ -4,6 +4,7 @@ Tools for writing to jsonlines files and processing
 `Conversation` and `Tweet` objects.
 """
 import random
+import json
 from dataclasses import dataclass
 from dataclasses_json import dataclass_json
 import jsonlines
@@ -21,6 +22,9 @@ class Tweet:
     content: str
     language: str
     date_time: str
+    num_followers: int
+    num_followed: int
+    profile_description: str
 
 @dataclass_json
 @dataclass
@@ -28,9 +32,7 @@ class Conversation:
     """
     Each `Conversation` object
     will hold a list of `Tweet` objects,
-    making up a conversation thread. If the conversation
-    has been run through the model, it will also hold a
-    a list of the 15 tokens with highest SoftMax values
+    making up a conversation thread.
     """
     thread: list
     model_statistics: list
@@ -40,7 +42,7 @@ class Conversation:
 class ConversationPrompt:
     """
     Dataclass for holding the templated conversation
-    and its model statistics
+    and the model statistics
     """
     text: str
     model_statistics: list
@@ -52,6 +54,29 @@ def _save_data(data, file):
     with jsonlines.open(file, mode='w') as writer:
         for conversation in data:
             writer.write(conversation.to_json())
+
+def _read_data(file):
+    conversations = []
+    with jsonlines.open(file) as reader:
+        for conv in reader:
+            conv = json.loads(conv)
+            print(conv)
+            conv_list = []
+            for tweet in conv["text"]:
+                conv_list.append(Tweet(
+                                            tweet["user_id"],
+                                            tweet["user_handle"],
+                                            tweet["display_name"],
+                                            tweet["content"],
+                                            tweet["language"],
+                                            tweet["date_time"],
+                                            tweet["num_followers"],
+                                            tweet["num_followed"],
+                                            tweet["profile_description"]
+                                            )
+                                        )
+            conversations.append(ConversationPrompt(conv_list, conv["model_statistics"]))
+    return conversations
 
 def _prepare_testing_set(shots, data_to_test,topic,few_shot_labels):
     templated_prompts = _few_shot_template(shots, topic, few_shot_labels)

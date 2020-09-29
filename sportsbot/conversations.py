@@ -70,6 +70,9 @@ def _get_thread(tweet,api):
                             tweet.full_text,
                             tweet.lang,
                             tweet.created_at
+                            tweet.user.followers_count,
+                            tweet.user.friends_count,
+                            tweet.user.description
                           )
                     ]
     after_initial_tweet = _get_subsequent(tweet,api)
@@ -97,7 +100,10 @@ def _find_first_tweet(reply_status, api, prev_tweets=None):
                                 tweet.user.name,
                                 tweet.full_text,
                                 tweet.lang,
-                                tweet.created_at
+                                tweet.created_at,
+                                tweet.user.followers_count,
+                                tweet.user.friends_count,
+                                tweet.user.description
                                 )
                             )
         reply_status = tweet.in_reply_to_status_id
@@ -130,7 +136,10 @@ def _get_subsequent(tweet, api, subsequent_tweets=None):
                                                 reply.user.name,
                                                 reply.full_text,
                                                 reply.lang,
-                                                reply.created_at
+                                                reply.created_at,
+                                                tweet.user.followers_count,
+                                                tweet.user.friends_count,
+                                                tweet.user.description
                                                 )
                                             )
                 return _get_subsequent(reply, api,subsequent_tweets)
