@@ -40,6 +40,10 @@ def few_shot_train(test_data,
     highest softmax values and a list of tuples with the model's answer and the
     correct label.
     """
+    if len(test_data) != len(test_labels):
+        raise AssertionError ("Must have an equal number of test cases and test labels")
+    if len(training_conversations) != len(few_shot_labels):
+        raise AssertionError ("Must have an equal number of trianing cases and training labels")
     #probabilities_dict = defaultdict()
     model_answers = []
     templated_conversations = []
