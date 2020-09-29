@@ -10,11 +10,11 @@ class TestInferenceFunctions(unittest.TestCase):
     def test_top_softmax(self, tokenizer=tokenizer):
         text_array = np.array([.1, .06, .46, .007, .09])
         result = [
-                    {tokenizer(2): str(.46)},
-                    {tokenizer(0): str(.1)},
-                    {tokenizer(4): str(.09)},
-                    {tokenizer(1): str(.06)},
-                    {tokenizer(3): str(.007)}
+                    {tokenizer.decode(2): str(.46)},
+                    {tokenizer.decode(0): str(.1)},
+                    {tokenizer.decode(4): str(.09)},
+                    {tokenizer.decode(1): str(.06)},
+                    {tokenizer.decode(3): str(.007)}
                     ]
         self.assertEqual(_top_softmax(text_array, tokenizer), result)
 
