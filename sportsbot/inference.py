@@ -88,4 +88,4 @@ def _calculate_accuracy(labels, model_answers):
 def _top_softmax(prob_dict, tokenizer, num_tokens=15):
     num_tokens = min(len(prob_dict), num_tokens)
     sorted_indices = np.argsort(prob_dict)[::-1][:num_tokens]
-    return [{tokenizer.decode(index): str(prob_dict[index])} for index in sorted_indices]
+    return [{tokenizer.decode([index]): str(prob_dict[index])} for index in sorted_indices]
