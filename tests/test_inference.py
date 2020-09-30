@@ -31,7 +31,7 @@ class TestInferenceFunctions(unittest.TestCase):
         test_labels = [ "Yes"]*len(test_data)
         train_data = test_convos[len_data-3:]
         train_labels = ["Yes"]*len(train_data)
-        few_shot_train(
+        return few_shot_train(
                         test_data,
                         test_labels,
                         topic,
@@ -40,3 +40,4 @@ class TestInferenceFunctions(unittest.TestCase):
                         tokenizer,
                         model
                         )
+                        

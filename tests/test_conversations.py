@@ -9,4 +9,6 @@ class TestTweepyStream(unittest.TestCase):
     def test_likely_long_convs(self):
         filter_out = []
         search = "I"
-        get_conversations(search, filter_out)
+        conversations = get_conversations(search, filter_out)
+        for conversation in conversations:
+            print(conversation)
