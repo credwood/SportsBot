@@ -101,7 +101,7 @@ def _few_shot_template(shots, topic, few_shot_labels, templated_prompts=None, te
             names.add(tweet.user_handle)
         name = random.choice(list(names))
         if test_data:
-            end_prompt = f"\n--\nQuestion: Does {name} like {topic}? \nAnswer: "
+            end_prompt = f"\n--\nQuestion: Does {name} like {topic}? \nAnswer:"
             conv_prompt = conversation_str + end_prompt
             test_template.append(conv_prompt)
             test_convs.append(templated_prompts + conv_prompt)
