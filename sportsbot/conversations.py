@@ -22,17 +22,20 @@ def _create_api():
         raise exception
     return api
 
-def get_conversations(search_terms, filter_terms, jsonlines_file='output.jsonl'):
+def get_conversations(search_terms,
+                        filter_terms,
+                        jsonlines_file='output.jsonl',
+                        max_conversation_length=10):
     """
     Collects up to 20 relevant conversations using Tweepy's wrapper for Twitter's API,
     processes them into dataclasses and stores them with jsonlines file.
     """
     api = _create_api()
-    conversations = _find_conversation(search_terms, filter_terms, api)
+    conversations = _find_conversation(search_terms, filter_terms, api, max_conversation_length)
     _save_data(conversations,jsonlines_file)
     return conversations
 
-def _find_conversation(name, terms, api):
+def _find_conversation(name, terms, api, max_conversation_length):
     """
     Initial search for tweets. Will find up to 20 tweets
     fulfilling the search criteria. This function calls `_get_thread`
@@ -49,7 +52,9 @@ def _find_conversation(name, terms, api):
     while True:
         try:
             tweet = found_tweets.next()
-            conversations_lst.append(_get_thread(tweet,api))
+            conversation_obj = _get_thread(tweet,api)
+            if len(conversation_obj.thread) <= max_conversation_length:
+                conversations_lst.append(conversation_obj)
         except tweepy.TweepError as exception:
             print(exception)
         except StopIteration:

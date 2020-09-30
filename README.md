@@ -51,10 +51,10 @@ Once the dependencies are installed, you can get started with:
 ```sh
 from sportsbot.conversations import get_conversations
 
-data = get_conversations(
-            "my search phrase", 
-            ['"phrases to exclude"', 'bad', 'word'], jsonlines_file='my_output.jsonl'
-            )
+data = get_conversations(search_terms,
+                        filter_terms,
+                        jsonlines_file='output.jsonl',
+                        max_conversation_length=10)
 ```
 
 This function requires a search phrase, a list of words and/or phrases that should not appear in the conversation* and a path to the file in which to store the `Conversation` objects. The default file is `output.jsonl`, which will be in the `sportsbot` folder.
@@ -75,6 +75,6 @@ training_data = few_shot_train(test_data,
                     ):
 ```
 
-The function will return the tokens and SoftMax values of the 15 most likely answers, and it will add them to each `Conversation` object which will be saved in a new output file. The function will also return the batch accuracy, SoftMax values and a list of (model predictions vs labels).
+For each conversation, the function will write a `ConversationPrompt` object to the `jsonlines_file_out` file. Each object will contain the conversation in template-form (without the training conversations) and a list of the 15 tokens with the largest SoftMax values. The function will return the batch accuracy, 15 largest SoftMax values for each conversation and a list of (model predictions vs labels).
 
 *For now the filter is only applied to the initial tweet found in the conversation.
