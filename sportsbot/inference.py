@@ -60,9 +60,8 @@ def few_shot_test(test_data,
         predicted_prob = softmax(output.logits[0, -1, :], axis=0)
         #probabilities_dict[f"{i+1}_test"] = predicted_prob
 
-        max_word=tokenizer.decode(np.where(predicted_prob==max(predicted_prob)))
-        model_answers.append(max_word)
         top_softmax = _top_softmax(predicted_prob,tokenizer)
+        model_answers.append(list(top_softmax[0].keys())[0])
         confidence[f"{i+1}_test"] = top_softmax
         templated_conversations.append(ConversationPrompt(prompts[i], top_softmax))
     _save_data(templated_conversations,jsonlines_file_out)
