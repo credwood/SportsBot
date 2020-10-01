@@ -81,7 +81,7 @@ def _get_thread(tweet,api):
                           )
                     ]
     after_initial_tweet = _get_subsequent(tweet,api)
-    if (not before_initial_tweet) or (not after_initial_tweet):
+    if (before_initial_tweet is False) or (after_initial_tweet is False):
         return False
     full_conv = before_initial_tweet + initial_tweet + after_initial_tweet
     conversation_class = Conversation(full_conv, [])
