@@ -32,12 +32,14 @@ def few_shot_test(test_data,
                     jsonlines_file_out='add_stats_output.jsonl'
                     ):
     """
-    Function for experimentation. Takes a few labeled records for training,
-    a dataset and its labels, the conversation topic on which to classify,
-    a jsonlines file path containing the data objects and updates the file with the
-    model's prediction and returns the accuracy, dictionary of 15 tokens with
+    Function for experimentation. Takes a few records for training and their labels,
+    a test set and --if desired--its labels, the conversation topic on which to classify,
+    a jsonlines file path for the output (SoftMax values for each conversation along with
+    the conversation in template form), a GPT-2 model and corresponding tokenizer. 
+    For labeled test data, the function will return the accuracy, dictionary of 15 tokens with
     highest softmax values and a list of tuples with the model's answer and the
-    correct label.
+    correct label. For unlabeled test data, the function will return a dictionary
+    of the top SoftMax values for each conversation.
     """
     if test_labels:
         if len(test_data) != len(test_labels):
