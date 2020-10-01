@@ -62,8 +62,9 @@ This function requires a search phrase, a list of words and/or phrases that shou
 To test the classifier, you will need to create a list of labels for the training and testing sets. Import and run `few_shot_train`:
 
 ```sh
-from sportsbot.inference import few_shot_train
+from sportsbot.inference import few_shot_train, download_model_tokenizer
 
+model, tokenizer = download_model_tokenizer()
 training_data = few_shot_train(test_data,
                     test_labels,
                     topic,
