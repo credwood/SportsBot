@@ -35,7 +35,7 @@ def few_shot_test(test_data,
     Function for experimentation. Takes a few records for training and their labels,
     a test set and --if desired--its labels, the conversation topic on which to classify,
     a jsonlines file path for the output (SoftMax values for each conversation along with
-    the conversation in template form), a GPT-2 model and corresponding tokenizer. 
+    the conversation in template form), a GPT-2 model and corresponding tokenizer.
     For labeled test data, the function will return the accuracy, dictionary of 15 tokens with
     highest softmax values and a list of tuples with the model's answer and the
     correct label. For unlabeled test data, the function will return a dictionary
@@ -50,11 +50,11 @@ def few_shot_test(test_data,
     model_answers = []
     templated_conversations = []
     confidence = defaultdict()
-    conversations, prompts = _prepare_testing_set(training_conversations,
+    shots_and_tests, test_conversations = _prepare_testing_set(training_conversations,
                                                     test_data,
                                                     topic,
                                                     training_labels)
-    for i, tweets in enumerate(conversations):
+    for i, tweets in enumerate(shots_and_tests):
         input_ids = tokenizer.encode(tweets,return_tensors='tf')
         output = model(input_ids)
         predicted_prob = softmax(output.logits[0, -1, :], axis=0)
@@ -63,7 +63,7 @@ def few_shot_test(test_data,
         top_softmax = _top_softmax(predicted_prob,tokenizer)
         model_answers.append(list(top_softmax[0].keys())[0])
         confidence[f"{i+1}_test"] = top_softmax
-        templated_conversations.append(ConversationPrompt(prompts[i], top_softmax))
+        templated_conversations.append(ConversationPrompt(test_conversations[i], top_softmax))
     _save_data(templated_conversations,jsonlines_file_out)
 
     if test_labels:
