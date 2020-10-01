@@ -15,7 +15,7 @@ class TestInferenceFunctions(unittest.TestCase):
                     {tokenizer.decode(4): str(.09)},
                     {tokenizer.decode(1): str(.06)},
                     {tokenizer.decode(3): str(.007)}
-                    ]
+                ]
         self.assertEqual(_top_softmax(text_array, tokenizer), result)
 
     def test_calc_accuracy(self):
@@ -40,4 +40,3 @@ class TestInferenceFunctions(unittest.TestCase):
                         tokenizer,
                         model
                         )
-                        

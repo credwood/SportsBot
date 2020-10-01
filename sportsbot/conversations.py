@@ -8,7 +8,7 @@ from .datasets import _save_data, Tweet, Conversation
 
 def _create_api():
     """
-    Wrapper for tweepy's API method
+    Wrapper for Tweepy's API method
     """
     akey, asecretkey = os.environ["AKEY"],os.environ["ASECRETKEY"]
     atoken, asecret = os.environ["ATOKEN"],os.environ["ASECRET"]
@@ -53,7 +53,7 @@ def _find_conversation(name, terms, api, max_conversation_length):
         try:
             tweet = found_tweets.next()
             conversation_obj = _get_thread(tweet,api)
-            if len(conversation_obj.thread) <= max_conversation_length:
+            if conversation_obj and len(conversation_obj.thread) <= max_conversation_length:
                 conversations_lst.append(conversation_obj)
         except tweepy.TweepError as exception:
             print(exception)
@@ -81,9 +81,10 @@ def _get_thread(tweet,api):
                           )
                     ]
     after_initial_tweet = _get_subsequent(tweet,api)
+    if (not before_initial_tweet) or (not after_initial_tweet):
+        return False
     full_conv = before_initial_tweet + initial_tweet + after_initial_tweet
-    stat_lst = []
-    conversation_class = Conversation(full_conv, stat_lst)
+    conversation_class = Conversation(full_conv, [])
     return conversation_class
 
 def _find_first_tweet(reply_status, api, prev_tweets=None):
@@ -113,10 +114,9 @@ def _find_first_tweet(reply_status, api, prev_tweets=None):
                             )
         reply_status = tweet.in_reply_to_status_id
         return _find_first_tweet(reply_status,api,prev_tweets)
-
     except tweepy.TweepError as exception:
         print(exception)
-        return prev_tweets[::-1]
+        return False
 
 def _get_subsequent(tweet, api, subsequent_tweets=None):
     """
@@ -151,6 +151,7 @@ def _get_subsequent(tweet, api, subsequent_tweets=None):
 
         except tweepy.TweepError as exception:
             print(exception)
+            return False
         except StopIteration:
             break
 
