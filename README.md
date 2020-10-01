@@ -65,13 +65,13 @@ To test the classifier, you will need to create a list of labels for the trainin
 from sportsbot.inference import few_shot_train, download_model_tokenizer
 
 model, tokenizer = download_model_tokenizer()
-training_data = few_shot_train(test_data,
-                    test_labels,
+training_data = few_shot_test(test_data,
                     topic,
                     training_conversations,
-                    few_shot_labels,
+                    training_labels,
                     tokenizer,
                     model,
+                    test_labels=False,
                     jsonlines_file_out='add_stats_output.jsonl'
                     ):
 ```

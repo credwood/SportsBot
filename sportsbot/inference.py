@@ -8,28 +8,27 @@ import numpy as np
 from transformers import TFGPT2LMHeadModel, GPT2Tokenizer
 from .datasets import _prepare_testing_set, _save_data, ConversationPrompt
 
-def download_model_tokenizer():
+def download_model_tokenizer(model_type="gpt2"):
     """
-    for now there will not be an option
-    for which model/tokenizer to use
+    colab can run GPT2 mdoels: 'gpt2', 'gpt2-medium, 'gpt2-large'
     """
-    tokenizer_instantiate = GPT2Tokenizer.from_pretrained("gpt2-large")
+    tokenizer_instantiate = GPT2Tokenizer.from_pretrained(model_type)
     tokenizer_instantiate.pad_token = tokenizer_instantiate.eos_token
 
     # add the EOS token as PAD token to avoid warnings
-    model_instantiate = TFGPT2LMHeadModel.from_pretrained("gpt2-large",
+    model_instantiate = TFGPT2LMHeadModel.from_pretrained(model_type,
                                             pad_token_id=tokenizer_instantiate .eos_token_id,
                                             return_dict=True
                                             )
     return model_instantiate, tokenizer_instantiate
 
-def few_shot_train(test_data,
-                    test_labels,
+def few_shot_test(test_data,
                     topic,
                     training_conversations,
-                    few_shot_labels,
+                    training_labels,
                     tokenizer,
                     model,
+                    test_labels=False,
                     jsonlines_file_out='add_stats_output.jsonl'
                     ):
     """
@@ -40,16 +39,19 @@ def few_shot_train(test_data,
     highest softmax values and a list of tuples with the model's answer and the
     correct label.
     """
-    if len(test_data) != len(test_labels):
-        raise AssertionError ("Must have an equal number of test cases and test labels")
-    if len(training_conversations) != len(few_shot_labels):
+    if test_labels:
+        if len(test_data) != len(test_labels):
+            raise AssertionError ("Must have an equal number of test cases and test labels")
+    if len(training_conversations) != len(training_labels):
         raise AssertionError ("Must have an equal number of trianing cases and training labels")
     #probabilities_dict = defaultdict()
     model_answers = []
     templated_conversations = []
     confidence = defaultdict()
     conversations, prompts = _prepare_testing_set(training_conversations,
-                                                    test_data, topic, few_shot_labels)
+                                                    test_data,
+                                                    topic,
+                                                    training_labels)
     for i, tweets in enumerate(conversations):
         input_ids = tokenizer.encode(tweets,return_tensors='tf')
         output = model(input_ids)
@@ -60,23 +62,20 @@ def few_shot_train(test_data,
         model_answers.append(max_word)
         top_softmax = _top_softmax(predicted_prob,tokenizer)
         confidence[f"{i+1}_test"] = top_softmax
-        test_data[i].model_statistics = top_softmax
         templated_conversations.append(ConversationPrompt(prompts[i], top_softmax))
     _save_data(templated_conversations,jsonlines_file_out)
-    accuracy = _calculate_accuracy(test_labels, model_answers)
-    statistics = {
-                    "accuracy": accuracy,
-                    "confidence_dict": confidence,
-                    "model_answeres_vs_labels": list(zip(model_answers, test_labels))
-                    }
 
-    return statistics
+    if test_labels:
+        accuracy = _calculate_accuracy(test_labels, model_answers)
+        statistics = {
+                        "accuracy": accuracy,
+                        "confidence_dict": confidence,
+                        "model_answeres_vs_labels": list(zip(model_answers, test_labels))
+                        }
 
-def few_shot_predict():
-    """
-    this is a placeholder for predict function
-    """
-    #_prepare_testing_set()
+        return statistics
+    else:
+        return confidence
 
 def _calculate_accuracy(labels, model_answers):
     correct = 0.
