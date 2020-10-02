@@ -27,6 +27,6 @@ class TestTemplateFunctions(unittest.TestCase):
     training_convs = conversations[:3]
     training_labels = ["Yes"]*3
     testing_convs = conversations[3:]
-    full_templates,_ = _prepare_testing_set(training_convs, testing_convs, "lakers", training_labels)
+    full_templates,_,_ = _prepare_testing_set(training_convs, testing_convs, "lakers", training_labels)
     for conv in full_templates:
         print(conv)

@@ -44,7 +44,8 @@ class ConversationPrompt:
     Dataclass for holding the templated conversation
     and the model statistics
     """
-    text: str
+    test_text: str
+    prompt_text: str
     model_statistics: list
 
 @dataclass_json
@@ -92,7 +93,7 @@ def read_data(file,conversation_obj=True):
         else:
             for conv in reader:
                 conv = json.loads(conv)
-                conversations.append(ConversationPrompt(conv["text"], conv["model_statistics"]))
+                conversations.append(ConversationPrompt(conv["test_text"], conv["prompt_text"], conv["model_statistics"]))
 
     return conversations
 
@@ -131,4 +132,4 @@ def _few_shot_template(shots, topic, few_shot_labels, templated_prompts=None, te
                                                 f"{new_line}{new_line}next dialogue{new_line}")
             accumulate_prompts += (conversation_str
                                     + end_prompt)
-    return (test_convs, test_template) if test_data else accumulate_prompts
+    return (test_convs, test_template, templated_prompts) if test_data else accumulate_prompts
