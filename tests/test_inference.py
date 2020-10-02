@@ -1,8 +1,9 @@
 import unittest
 import numpy as np
 from sportsbot.inference import _top_softmax, _calculate_accuracy
-from sportsbot.inference import few_shot_train, download_model_tokenizer
+from sportsbot.inference import few_shot_test, download_model_tokenizer
 from sportsbot.conversations import get_conversations
+from sportsbot.datasets import _read_data
 
 class TestInferenceFunctions(unittest.TestCase):
     model, tokenizer = download_model_tokenizer()
@@ -23,20 +24,23 @@ class TestInferenceFunctions(unittest.TestCase):
         model_ans = [" no", " !", " I"]
         self.assertAlmostEqual(_calculate_accuracy(labels, model_ans), 0.3333333333333333333)
 
-    def test_few_shot_train(self, model=model, tokenizer=tokenizer):
+    def test_few_shot_test(self, model=model, tokenizer=tokenizer):
         topic = "lakers"
         test_convos = get_conversations('"the lakers suck"', ['racist', 'china'])
         len_data = len(test_convos)
         test_data = test_convos[:len_data-3]
-        test_labels = [ "Yes"]*len(test_data)
         train_data = test_convos[len_data-3:]
         train_labels = ["Yes"]*len(train_data)
-        return few_shot_train(
+        test = few_shot_test(
                         test_data,
-                        test_labels,
                         topic,
                         train_data,
                         train_labels,
                         tokenizer,
-                        model
+                        model,
+                        jsonlines_file_out='stats_output.jsonl'
                         )
+        print(test)
+        saved_data = _read_data('stats_output.jsonl')
+        for conv in saved_data:
+            print(conv)
