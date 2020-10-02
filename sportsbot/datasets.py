@@ -77,14 +77,14 @@ def _read_data(file):
             conv_list = []
             for tweet in conv["text"]:
                 conv_list.append(Tweet(
-                                            tweet["user_id"],
+                                            int(tweet["user_id"]),
                                             tweet["user_handle"],
                                             tweet["display_name"],
                                             tweet["content"],
                                             tweet["language"],
                                             tweet["date_time"],
-                                            tweet["num_followers"],
-                                            tweet["num_followed"],
+                                            int(tweet["num_followers"]),
+                                            int(tweet["num_followed"]),
                                             tweet["profile_description"]
                                             )
                                         )
