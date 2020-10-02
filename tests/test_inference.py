@@ -3,7 +3,7 @@ import numpy as np
 from sportsbot.inference import _top_softmax, _calculate_accuracy
 from sportsbot.inference import few_shot_test, download_model_tokenizer
 from sportsbot.conversations import get_conversations
-from sportsbot.datasets import _read_data
+from sportsbot.datasets import read_data
 
 class TestInferenceFunctions(unittest.TestCase):
     model, tokenizer = download_model_tokenizer()
@@ -41,6 +41,6 @@ class TestInferenceFunctions(unittest.TestCase):
                         jsonlines_file_out='stats_output.jsonl'
                         )
         print(test)
-        saved_data = _read_data('stats_output.jsonl')
+        saved_data = read_data('stats_output.jsonl', conversation_obj=False)
         for conv in saved_data:
             print(conv)

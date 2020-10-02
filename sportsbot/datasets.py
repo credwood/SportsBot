@@ -68,27 +68,32 @@ def _save_data(data, file):
         for conversation in data:
             writer.write(conversation.to_json())
 
-def _read_data(file):
+def read_data(file,conversation_obj=True):
     conversations = []
     with jsonlines.open(file) as reader:
-        for conv in reader:
-            conv = json.loads(conv)
-            print(conv)
-            conv_list = []
-            for tweet in conv["text"]:
-                conv_list.append(Tweet(
-                                            int(tweet["user_id"]),
-                                            tweet["user_handle"],
-                                            tweet["display_name"],
-                                            tweet["content"],
-                                            tweet["language"],
-                                            tweet["date_time"],
-                                            int(tweet["num_followers"]),
-                                            int(tweet["num_followed"]),
-                                            tweet["profile_description"]
+        if conversation_obj:
+            for conv in reader:
+                conv = json.loads(conv)
+                conv_list = []
+                for tweet in conv["thread"]:
+                    conv_list.append(Tweet(
+                                                int(tweet["user_id"]),
+                                                tweet["user_handle"],
+                                                tweet["display_name"],
+                                                tweet["content"],
+                                                tweet["language"],
+                                                tweet["date_time"],
+                                                int(tweet["num_followers"]),
+                                                int(tweet["num_followed"]),
+                                                tweet["profile_description"]
+                                                )
                                             )
-                                        )
-            conversations.append(ConversationPrompt(conv_list, conv["model_statistics"]))
+                conversations.append(Conversation(conv_list, conv["model_statistics"]))
+        else:
+            for conv in reader:
+                conv = json.loads(conv)
+                conversations.append(ConversationPrompt(conv["text"], conv["model_statistics"]))
+
     return conversations
 
 def _prepare_testing_set(shots, data_to_test,topic,few_shot_labels):

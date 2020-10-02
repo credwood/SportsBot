@@ -1,12 +1,12 @@
 import unittest
-from sportsbot.datasets import Tweet, ConversationPrompt
-from sportsbot.datasets import _save_data, _read_data, _prepare_testing_set
+from sportsbot.datasets import Tweet, Conversation
+from sportsbot.datasets import _save_data, read_data, _prepare_testing_set
 from sportsbot.conversations import get_conversations
 
 class TestJsonlinesFunctions(unittest.TestCase):
     def test_encode_decode_data(self):
         empty_list = []
-        test_conv_obj = ConversationPrompt(
+        test_conv_obj = Conversation(
                                 [Tweet(12338473830332,
                                         "dog",
                                         "dooog",
@@ -20,7 +20,7 @@ class TestJsonlinesFunctions(unittest.TestCase):
                                         )],empty_list)
         _save_data([test_conv_obj], "read_write_test.jsonl")
 
-        self.assertEqual(test_conv_obj, _read_data("read_write_test.jsonl")[0])
+        self.assertEqual(test_conv_obj, read_data("read_write_test.jsonl")[0])
 
 class TestTemplateFunctions(unittest.TestCase):
     conversations = get_conversations('"lakers suck"', ["china", "racist"])
