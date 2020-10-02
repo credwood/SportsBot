@@ -47,6 +47,19 @@ class ConversationPrompt:
     text: str
     model_statistics: list
 
+@dataclass_json
+@dataclass
+class Account:
+    """
+    dataclass to store info about study participants
+    """
+    account_id: int
+    account_name: str
+    bot: str
+    sentiment: dict
+    engagement: dict
+
+
 def _save_data(data, file):
     """
     writes `Conversation` objects to a jsonlines file
