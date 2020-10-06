@@ -112,7 +112,7 @@ def _find_first_tweet(reply_status, api, filter_list, prev_tweets=None):
                                 )
                             )
         reply_status = tweet.in_reply_to_status_id
-        return _find_first_tweet(reply_status,api,prev_tweets)
+        return _find_first_tweet(reply_status, api, filter_list, prev_tweets)
     except tweepy.TweepError as exception:
         print(exception)
         return False
@@ -146,7 +146,7 @@ def _get_subsequent(tweet, api, filter_list, subsequent_tweets=None):
                                                 tweet.user.description
                                                 )
                                             )
-                return _get_subsequent(reply, api,subsequent_tweets)
+                return _get_subsequent(reply, api, filter_list, subsequent_tweets)
 
         except tweepy.TweepError as exception:
             print(exception)
