@@ -35,16 +35,14 @@ def get_conversations(search_terms,
     _save_data(conversations,jsonlines_file)
     return conversations
 
-def _find_conversation(name, terms, api, max_conversation_length):
+def _find_conversation(name, filter_terms, api, max_conversation_length):
     """
     Initial search for tweets. Will find up to 20 tweets
     fulfilling the search criteria. This function calls `_get_thread`
     for each tweet which returns a full conversation.
     """
     conversations_lst = []
-    subtract_terms = ''
-    for term in terms:
-        subtract_terms += ' -'+term
+    subtract_terms = _filter_terms(filter_terms)
     found_tweets = tweepy.Cursor(api.search,
                         q=name+subtract_terms+" -filter:retweets",
                         timeout=999999,
@@ -52,7 +50,7 @@ def _find_conversation(name, terms, api, max_conversation_length):
     while True:
         try:
             tweet = found_tweets.next()
-            conversation_obj = _get_thread(tweet,api)
+            conversation_obj = _get_thread(tweet,api,filter_terms)
             if conversation_obj and len(conversation_obj.thread) <= max_conversation_length:
                 conversations_lst.append(conversation_obj)
         except tweepy.TweepError as exception:
@@ -61,13 +59,13 @@ def _find_conversation(name, terms, api, max_conversation_length):
             break
     return conversations_lst
 
-def _get_thread(tweet,api):
+def _get_thread(tweet,api,filter_list):
     """
     calls `_find_first_tweet` and `_get_subsequent`, concatenates
     these values with the initial tweet and returns the full thread in order.
     """
     reply_status = tweet.in_reply_to_status_id
-    before_initial_tweet = _find_first_tweet(reply_status,api)
+    before_initial_tweet = _find_first_tweet(reply_status,api,filter_list)
     initial_tweet = [Tweet(
                             tweet.id,
                             tweet.user.screen_name,
@@ -80,14 +78,14 @@ def _get_thread(tweet,api):
                             tweet.user.description
                           )
                     ]
-    after_initial_tweet = _get_subsequent(tweet,api)
+    after_initial_tweet = _get_subsequent(tweet,api,filter_list)
     if (before_initial_tweet is False) or (after_initial_tweet is False):
         return False
     full_conv = before_initial_tweet + initial_tweet + after_initial_tweet
     conversation_class = Conversation(full_conv, [])
     return conversation_class
 
-def _find_first_tweet(reply_status, api, prev_tweets=None):
+def _find_first_tweet(reply_status, api, filter_list, prev_tweets=None):
     """
     This function gets tweets prior to initial tweet
 
@@ -97,7 +95,8 @@ def _find_first_tweet(reply_status, api, prev_tweets=None):
         return prev_tweets[::-1]
     try:
         tweet = api.get_status(reply_status, tweet_mode='extended',wait_on_rate_limit=True)
-
+        if _filter_terms(filter_list, tweet=tweet,find_first=True):
+            return False
         #maybe the language condition isn't necessary?
         #if status.lang == language:
         prev_tweets.append(Tweet(
@@ -118,7 +117,7 @@ def _find_first_tweet(reply_status, api, prev_tweets=None):
         print(exception)
         return False
 
-def _get_subsequent(tweet, api, subsequent_tweets=None):
+def _get_subsequent(tweet, api, filter_list, subsequent_tweets=None):
     """
     This function gets subsequent tweets. It's necessary to use the API's
     search function to find tweets whose `in_reply_to_status_id` field
@@ -127,8 +126,8 @@ def _get_subsequent(tweet, api, subsequent_tweets=None):
     subsequent_tweets = [] if subsequent_tweets is None else subsequent_tweets
     tweet_id = tweet.id
     user_name = tweet.user.screen_name
-
-    replies = tweepy.Cursor(api.search, q='to:'+user_name+' -filter:retweets',
+    subtract_terms = _filter_terms(filter_list)
+    replies = tweepy.Cursor(api.search, q='to:'+user_name+subtract_terms+' -filter:retweets',
         since_id=tweet_id, max_id=None, tweet_mode='extended').items()
 
     while True:
@@ -156,3 +155,15 @@ def _get_subsequent(tweet, api, subsequent_tweets=None):
             break
 
     return subsequent_tweets
+
+def _filter_terms(filters, tweet=False,find_first=False):
+    if find_first:
+        for term in filters:
+            if term in tweet.full_text:
+                return True
+        return False
+    else:
+        subtract_terms = ''
+        for term in filters:
+            subtract_terms += ' -'+term
+        return subtract_terms
