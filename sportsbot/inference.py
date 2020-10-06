@@ -17,7 +17,7 @@ def download_model_tokenizer(model_type="gpt2"):
 
     # add the EOS token as PAD token to avoid warnings
     model_instantiate = TFGPT2LMHeadModel.from_pretrained(model_type,
-                                            pad_token_id=tokenizer_instantiate .eos_token_id,
+                                            pad_token_id=tokenizer_instantiate.eos_token_id,
                                             return_dict=True
                                             )
     return model_instantiate, tokenizer_instantiate
