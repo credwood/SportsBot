@@ -51,7 +51,7 @@ def _find_conversation(name, filter_terms, api, max_conversation_length):
         try:
             tweet = found_tweets.next()
             conversation_obj = _get_thread(tweet,api,filter_terms)
-            if conversation_obj and len(conversation_obj.thread) <= max_conversation_length:
+            if conversation_obj and 1 < len(conversation_obj.thread) <= max_conversation_length:
                 conversations_lst.append(conversation_obj)
         except tweepy.TweepError as exception:
             print(exception)
