@@ -4,7 +4,7 @@ and returns up to 20 conversations based on user's parameters
 """
 import os
 import tweepy
-from .datasets import _save_data, Tweet, Conversation
+from .datasets import _save_data, Tweet, _prepare_conv_template
 
 def _create_api():
     """
@@ -24,6 +24,7 @@ def _create_api():
 
 def get_conversations(search_terms,
                         filter_terms,
+                        template_topic,
                         jsonlines_file='output.jsonl',
                         max_conversation_length=10):
     """
@@ -31,11 +32,17 @@ def get_conversations(search_terms,
     processes them into dataclasses and stores them with jsonlines file.
     """
     api = _create_api()
-    conversations = _find_conversation(search_terms, filter_terms, api, max_conversation_length)
+    conversations = _find_conversation(
+                                search_terms,
+                                filter_terms,
+                                api,
+                                template_topic,
+                                max_conversation_length
+                    )
     _save_data(conversations,jsonlines_file)
     return conversations
 
-def _find_conversation(name, filter_terms, api, max_conversation_length):
+def _find_conversation(name, filter_terms, api, template_topic, max_conversation_length):
     """
     Initial search for tweets. Will find up to 20 tweets
     fulfilling the search criteria. This function calls `_get_thread`
@@ -50,7 +57,7 @@ def _find_conversation(name, filter_terms, api, max_conversation_length):
     while True:
         try:
             tweet = found_tweets.next()
-            conversation_obj = _get_thread(tweet,api,filter_terms)
+            conversation_obj = _get_thread(tweet,api,filter_terms,template_topic)
             if conversation_obj and 1 < len(conversation_obj.thread) <= max_conversation_length:
                 conversations_lst.append(conversation_obj)
         except tweepy.TweepError as exception:
@@ -59,7 +66,7 @@ def _find_conversation(name, filter_terms, api, max_conversation_length):
             break
     return conversations_lst
 
-def _get_thread(tweet,api,filter_list):
+def _get_thread(tweet,api,filter_list,template_topic):
     """
     calls `_find_first_tweet` and `_get_subsequent`, concatenates
     these values with the initial tweet and returns the full thread in order.
@@ -82,7 +89,7 @@ def _get_thread(tweet,api,filter_list):
     if (before_initial_tweet is False) or (after_initial_tweet is False):
         return False
     full_conv = before_initial_tweet + initial_tweet + after_initial_tweet
-    conversation_class = Conversation(full_conv, [])
+    conversation_class = _prepare_conv_template(full_conv, template_topic)
     return conversation_class
 
 def _find_first_tweet(reply_status, api, filter_list, prev_tweets=None):

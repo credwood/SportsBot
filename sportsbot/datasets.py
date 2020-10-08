@@ -35,7 +35,9 @@ class Conversation:
     making up a conversation thread.
     """
     thread: list
-    labels: list
+    label: str
+    template: str
+    model_statistics=list
 
 @dataclass_json
 @dataclass
@@ -71,6 +73,10 @@ def _save_data(data, file):
             writer.write(conversation.to_json())
 
 def read_data(file,conversation_obj=True):
+    """
+    reads jasonl data into either a `Conversation`
+    object, or a `ConversationPrompt` object.
+    """
     conversations = []
     with jsonlines.open(file) as reader:
         if conversation_obj:
@@ -79,26 +85,39 @@ def read_data(file,conversation_obj=True):
                 conv_list = []
                 for tweet in conv["thread"]:
                     conv_list.append(Tweet(
-                                                int(tweet["user_id"]),
-                                                tweet["user_handle"],
-                                                tweet["display_name"],
-                                                tweet["content"],
-                                                tweet["language"],
-                                                tweet["date_time"],
-                                                int(tweet["num_followers"]),
-                                                int(tweet["num_followed"]),
-                                                tweet["profile_description"]
-                                                )
+                                            int(tweet["user_id"]),
+                                            tweet["user_handle"],
+                                            tweet["display_name"],
+                                            tweet["content"],
+                                            tweet["language"],
+                                            tweet["date_time"],
+                                            int(tweet["num_followers"]),
+                                            int(tweet["num_followed"]),
+                                            tweet["profile_description"]
+                                           )
+                                    )
+                conversations.append(
+                                Conversation(
+                                            conv_list,
+                                            conv["label"],
+                                            conv["template"],
+                                            conv["model_statistics"]
                                             )
-                conversations.append(Conversation(conv_list, conv["labels"]))
+                                    )
         else:
             for conv in reader:
                 conv = json.loads(conv)
-                conversations.append(ConversationPrompt(conv["test_text"], conv["prompt_text"], conv["labels"]))
+                conversations.append(
+                                ConversationPrompt(
+                                                    conv["test_text"],
+                                                    conv["prompt_text"],
+                                                    conv["model_statistics"]
+                                                  )
+                                    )
 
     return conversations
 
-def _prepare_testing_set(shots, data_to_test,topic,few_shot_labels):
+def _prepare_few_shot_testing_set(shots, data_to_test,topic,few_shot_labels):
     templated_prompts = _few_shot_template(shots, topic, few_shot_labels)
     test_convs = _few_shot_template(data_to_test,
                                         topic,
@@ -107,6 +126,30 @@ def _prepare_testing_set(shots, data_to_test,topic,few_shot_labels):
                                         test_data=True
                                         )
     return test_convs
+
+def _prepare_conv_template(conversation, topic):
+    conversation_str = ''
+    new_line = '\n'
+    for tweet in conversation:
+        names = set([])
+        conversation_str += f"{tweet.user_handle}: {tweet.content}{new_line}"
+        names.add(tweet.user_handle)
+        name = random.choice(list(names))
+    end_prompt = (f"{new_line}--{new_line}"
+                    f"Question: Does {name} like {topic}? {new_line}Answer:")
+    return Conversation(conversation, '', conversation_str + end_prompt)
+
+def prepare_labeled_datasets(conversations, labels, jsonl_file='labeled_data.jsonl'):
+    """
+    add template to `Conversation` object. Returns and saves objects.
+    """
+    if len(conversations) != len(labels):
+        raise AssertionError("Must have an equal number of conversations and labels")
+    for index, _ in enumerate(conversations):
+        conversations[index].template = conversations[index].template + labels[index]
+        conversations[index].label = labels[index]
+    _save_data(conversations,jsonl_file)
+    return conversations
 
 def _few_shot_template(shots, topic, few_shot_labels, templated_prompts=None, test_data=False):
     accumulate_prompts = ''

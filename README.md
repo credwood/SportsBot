@@ -57,7 +57,7 @@ data = get_conversations(search_terms,
                         max_conversation_length=10)
 ```
 
-This function requires a search phrase, a list of words and/or phrases that should not appear in the conversation* and a path to the file in which to store the `Conversation` objects. The default file is `output.jsonl`, which will be in the `sportsbot` folder.
+This function requires a search phrase, a list of words and/or phrases that should not appear in the conversation and a path to the file in which to store the `Conversation` objects. The default file is `output.jsonl`, which will be in the `sportsbot` folder. `Conversation` objects will contain each conversation in template form; you can either pass this into the `train` function, or you can label the data for feature training (explained below).
 
 To test the classifier, you can create a list of labels for the testing sets and run `few_shot_test`:
 
@@ -71,11 +71,29 @@ training_data = few_shot_test(test_data,
                     training_labels,
                     tokenizer,
                     model,
+                    num_top_softmax=15,
                     test_labels=False,
                     jsonlines_file_out='add_stats_output.jsonl'
-                    ):
+    ):
 ```
 
 For each conversation, the function will write a `ConversationPrompt` object to the `jsonlines_file_out` file. Each object will contain the conversation in template-form (without the training conversations) and a list of the 15 tokens with the largest SoftMax values. The function will return the batch accuracy, 15 largest SoftMax values for each conversation and a list of (model predictions vs labels).
 
-*For now the filter is only applied to the initial tweet found in the conversation.
+For models that have been feature trained, use `test`:
+
+```sh
+test(test_convs,
+            tokenizer,
+            model,
+            num_top_softmax=15,
+            jsonlines_file_out='add_stats_output.jsonl'
+        ):
+```
+
+To add labels to templates for `Conversation` objects for feature training, use `prepare_labeled_datasets`
+
+```sh
+from sportsbot.dataset import prepare_labeled_datasets
+
+prepare_labeled_datasets(conversations, labels, jsonl_file='labeled_data.jsonl')
+```
