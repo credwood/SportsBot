@@ -130,11 +130,11 @@ def _prepare_few_shot_testing_set(shots, data_to_test,topic,few_shot_labels):
 def _prepare_conv_template(conversation, topic):
     conversation_str = ''
     new_line = '\n'
+    names = set([])
     for tweet in conversation:
-        names = set([])
         conversation_str += f"{tweet.user_handle}: {tweet.content}{new_line}"
         names.add(tweet.user_handle)
-        name = random.choice(list(names))
+    name = random.choice(list(names))
     end_prompt = (f"{new_line}--{new_line}"
                     f"Question: Does {name} like {topic}? {new_line}Answer:")
     return Conversation(conversation, '', conversation_str + end_prompt)
