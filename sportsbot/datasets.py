@@ -42,7 +42,8 @@ class Conversation:
 class ConversationPrompt:
     """
     Dataclass for holding the templated conversation
-    and the model statistics
+    and the labels, or an empyt list if the dataset is not
+    labeled.
     """
     test_text: str
     prompt_text: str
@@ -89,11 +90,11 @@ def read_data(file,conversation_obj=True):
                                                 tweet["profile_description"]
                                                 )
                                             )
-                conversations.append(Conversation(conv_list, conv["model_statistics"]))
+                conversations.append(Conversation(conv_list, conv["labels"]))
         else:
             for conv in reader:
                 conv = json.loads(conv)
-                conversations.append(ConversationPrompt(conv["test_text"], conv["prompt_text"], conv["model_statistics"]))
+                conversations.append(ConversationPrompt(conv["test_text"], conv["prompt_text"], conv["labels"]))
 
     return conversations
 
