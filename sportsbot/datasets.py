@@ -35,7 +35,7 @@ class Conversation:
     making up a conversation thread.
     """
     thread: list
-    model_statistics: list
+    labels: list
 
 @dataclass_json
 @dataclass
