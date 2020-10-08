@@ -53,8 +53,9 @@ from sportsbot.conversations import get_conversations
 
 data = get_conversations(search_terms,
                         filter_terms,
+                        template_topic,
                         jsonlines_file='output.jsonl',
-                        max_conversation_length=10)
+                        max_conversation_length=10):
 ```
 
 This function requires a search phrase, a list of words and/or phrases that should not appear in the conversation and a path to the file in which to store the `Conversation` objects. The default file is `output.jsonl`, which will be in the `sportsbot` folder. `Conversation` objects will contain each conversation in template form; you can either pass this into the `train` function, or you can label the data for feature training (explained below).
