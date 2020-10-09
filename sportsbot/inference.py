@@ -51,7 +51,7 @@ def few_shot_test(test_data,
     model_answers = []
     templated_conversations = []
     confidence = defaultdict()
-    shots_and_tests, test_conversations, prompts = _prepare_few_shot_testing_set(
+    shots_and_tests, prompts = _prepare_few_shot_testing_set(
                                                                                 training_conversations,
                                                                                 test_data,
                                                                                 topic,
@@ -66,7 +66,7 @@ def few_shot_test(test_data,
         top_softmax = _top_softmax(predicted_prob,tokenizer,num_top_softmax)
         model_answers.append(list(top_softmax[0].keys())[0])
         confidence[i] = top_softmax
-        templated_conversations.append(ConversationPrompt(test_conversations[i], prompts, top_softmax))
+        templated_conversations.append(ConversationPrompt(test_data[i].template, prompts, top_softmax))
     _save_data(templated_conversations,jsonlines_file_out)
 
     if test_labels:

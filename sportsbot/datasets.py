@@ -127,7 +127,7 @@ def _prepare_conv_template(conversation, topic):
     name = random.choice(list(names))
     end_prompt = (f"{new_line}--{new_line}"
                     f"Question: Does {name} like {topic}? {new_line}Answer:")
-    return Conversation(conversation, '', conversation_str + end_prompt)
+    return Conversation(conversation, '', conversation_str + end_prompt, [])
 
 def prepare_labeled_datasets(conversations, labels, jsonl_file='labeled_data.jsonl'):
     """
@@ -141,39 +141,19 @@ def prepare_labeled_datasets(conversations, labels, jsonl_file='labeled_data.jso
     _save_data(conversations,jsonl_file)
     return conversations
 
-def _prepare_few_shot_testing_set(shots, data_to_test,topic,few_shot_labels):
-    templated_prompts = _few_shot_template(shots, topic, few_shot_labels)
-    test_convs = _few_shot_template(data_to_test,
-                                        topic,
-                                        few_shot_labels,
-                                        templated_prompts=templated_prompts,
-                                        test_data=True
-                                        )
-    return test_convs
-
-def _few_shot_template(shots, topic, few_shot_labels, templated_prompts=None, test_data=False):
+def _prepare_few_shot_testing_set(shots, conversations, topic, few_shot_labels):
     accumulate_prompts = ''
-    test_convs = []
-    test_template = []
     new_line = '\n'
     for index, shot in enumerate(shots):
         conversation_thread = shot.thread
         names = set([])
-        conversation_str = ''
         for tweet in conversation_thread:
-            conversation_str += f"{tweet.user_handle}: {tweet.content}{new_line}"
+            accumulate_prompts += f"{tweet.user_handle}: {tweet.content}{new_line}"
             names.add(tweet.user_handle)
         name = random.choice(list(names))
-        if test_data:
-            end_prompt = (f"{new_line}--{new_line}"
-                            f"Question: Does {name} like {topic}? {new_line}Answer:")
-            conv_prompt = conversation_str + end_prompt
-            test_template.append(conv_prompt)
-            test_convs.append(templated_prompts + conv_prompt)
-        else:
-            end_prompt = (f"{new_line}--{new_line}Question: Does {name} like {topic}?{new_line}"
-                                                f"Answer: {few_shot_labels[index]}"
-                                                f"{new_line}{new_line}next dialogue{new_line}")
-            accumulate_prompts += (conversation_str
-                                    + end_prompt)
-    return (test_convs, test_template, templated_prompts) if test_data else accumulate_prompts
+        end_prompt = (f"{new_line}--{new_line}Question: Does {name} like {topic}?{new_line}"
+                                        f"Answer: {few_shot_labels[index]}"
+                                        f"{new_line}{new_line}next dialogue{new_line}")
+        accumulate_prompts += end_prompt
+    test_convs = [accumulate_prompts + conversation.prompt for conversation in conversations]
+    return test_convs, accumulate_prompts
