@@ -117,16 +117,6 @@ def read_data(file,conversation_obj=True):
 
     return conversations
 
-def _prepare_few_shot_testing_set(shots, data_to_test,topic,few_shot_labels):
-    templated_prompts = _few_shot_template(shots, topic, few_shot_labels)
-    test_convs = _few_shot_template(data_to_test,
-                                        topic,
-                                        few_shot_labels,
-                                        templated_prompts=templated_prompts,
-                                        test_data=True
-                                        )
-    return test_convs
-
 def _prepare_conv_template(conversation, topic):
     conversation_str = ''
     new_line = '\n'
@@ -150,6 +140,16 @@ def prepare_labeled_datasets(conversations, labels, jsonl_file='labeled_data.jso
         conversations[index].label = labels[index]
     _save_data(conversations,jsonl_file)
     return conversations
+
+def _prepare_few_shot_testing_set(shots, data_to_test,topic,few_shot_labels):
+    templated_prompts = _few_shot_template(shots, topic, few_shot_labels)
+    test_convs = _few_shot_template(data_to_test,
+                                        topic,
+                                        few_shot_labels,
+                                        templated_prompts=templated_prompts,
+                                        test_data=True
+                                        )
+    return test_convs
 
 def _few_shot_template(shots, topic, few_shot_labels, templated_prompts=None, test_data=False):
     accumulate_prompts = ''
