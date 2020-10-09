@@ -127,7 +127,8 @@ def _prepare_conv_template(conversation, topic):
     name = random.choice(list(names))
     end_prompt = (f"{new_line}--{new_line}"
                     f"Question: Does {name} like {topic}? {new_line}Answer:")
-    return Conversation(conversation, '', conversation_str + end_prompt, [])
+    full_template = conversation_str + end_prompt
+    return Conversation(conversation, '', full_template, [])
 
 def prepare_labeled_datasets(conversations, labels, jsonl_file='labeled_data.jsonl'):
     """
@@ -155,5 +156,5 @@ def _prepare_few_shot_testing_set(shots, conversations, topic, few_shot_labels):
                                         f"Answer: {few_shot_labels[index]}"
                                         f"{new_line}{new_line}next dialogue{new_line}")
         accumulate_prompts += end_prompt
-    test_convs = [accumulate_prompts + conversation.prompt for conversation in conversations]
+    test_convs = [accumulate_prompts + conversation.template for conversation in conversations]
     return test_convs, accumulate_prompts
