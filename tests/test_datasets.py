@@ -1,6 +1,6 @@
 import unittest
 from sportsbot.datasets import Tweet, Conversation
-from sportsbot.datasets import _save_data, read_data, _prepare_testing_set
+from sportsbot.datasets import _save_data, read_data, _prepare_few_shot_testing_set
 from sportsbot.conversations import get_conversations
 
 class TestJsonlinesFunctions(unittest.TestCase):
@@ -17,16 +17,16 @@ class TestJsonlinesFunctions(unittest.TestCase):
                                         122,
                                         1,
                                         "dummy profile"
-                                        )],empty_list)
+                                        )],"label","template",empty_list)
         _save_data([test_conv_obj], "read_write_test.jsonl")
 
         self.assertEqual(test_conv_obj, read_data("read_write_test.jsonl")[0])
 
 class TestTemplateFunctions(unittest.TestCase):
-    conversations = get_conversations('"lakers suck"', ["china", "racist"])
+    conversations = get_conversations('"lakers suck"', ["china", "racist"], "lakers")
     training_convs = conversations[:3]
     training_labels = ["Yes"]*3
     testing_convs = conversations[3:]
-    full_templates,_,_ = _prepare_testing_set(training_convs, testing_convs, "lakers", training_labels)
+    full_templates,_= _prepare_few_shot_testing_set(training_convs, testing_convs, "lakers", training_labels)
     for conv in full_templates:
         print(conv)

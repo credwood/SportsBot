@@ -17,7 +17,7 @@ class TestInferenceFunctions(unittest.TestCase):
                     {tokenizer.decode(1): str(.06)},
                     {tokenizer.decode(3): str(.007)}
                 ]
-        self.assertEqual(_top_softmax(text_array, tokenizer), result)
+        self.assertEqual(_top_softmax(text_array, tokenizer, 15), result)
 
     def test_calc_accuracy(self):
         labels = [" no", " yes", " yes"]
@@ -26,7 +26,7 @@ class TestInferenceFunctions(unittest.TestCase):
 
     def test_few_shot_test(self, model=model, tokenizer=tokenizer):
         topic = "lakers"
-        test_convos = get_conversations('"the lakers suck"', ['racist', 'china'])
+        test_convos = get_conversations('"the lakers suck"', ['racist', 'china'], "lakers")
         len_data = len(test_convos)
         test_data = test_convos[:len_data-3]
         train_data = test_convos[len_data-3:]
