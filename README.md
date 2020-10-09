@@ -83,7 +83,7 @@ For each conversation, the function will write a `ConversationPrompt` object to 
 For models that have been feature trained, use `test`:
 
 ```sh
-test(test_convs,
+conversations = test(test_convs,
             tokenizer,
             model,
             num_top_softmax=15,
