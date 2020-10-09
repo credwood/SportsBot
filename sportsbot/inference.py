@@ -81,7 +81,7 @@ def few_shot_test(test_data,
     else:
         return confidence
 
-def test(test_convs,
+def predict(test_convs,
             tokenizer,
             model,
             num_top_softmax=15,

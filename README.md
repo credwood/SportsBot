@@ -80,10 +80,10 @@ training_data = few_shot_test(test_data,
 
 For each conversation, the function will write a `ConversationPrompt` object to the `jsonlines_file_out` file. Each object will contain the conversation in template-form (without the training conversations) and a list of the 15 tokens with the largest SoftMax values. The function will return the batch accuracy, 15 largest SoftMax values for each conversation and a list of (model predictions vs labels).
 
-For models that have been feature trained, use `test`:
+For models that have been feature trained, use `predict`:
 
 ```sh
-conversations = test(test_convs,
+conversations = predict(test_convs,
             tokenizer,
             model,
             num_top_softmax=15,
