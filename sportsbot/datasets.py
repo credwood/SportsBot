@@ -37,7 +37,7 @@ class Conversation:
     thread: list
     label: str
     template: str
-    model_statistics=list
+    model_statistics: list
 
 @dataclass_json
 @dataclass
