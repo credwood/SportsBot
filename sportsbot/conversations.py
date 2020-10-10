@@ -44,7 +44,7 @@ def get_conversations(search_terms,
 
 def _find_conversation(name, filter_terms, api, template_topic, max_conversation_length):
     """
-    Initial search for tweets. Will find up to 20 tweets
+    Initial search for tweets. Will find up to 50 tweets
     fulfilling the search criteria. This function calls `_get_thread`
     for each tweet which returns a full conversation.
     """
@@ -53,7 +53,7 @@ def _find_conversation(name, filter_terms, api, template_topic, max_conversation
     found_tweets = tweepy.Cursor(api.search,
                         q=name+subtract_terms+" -filter:retweets",
                         timeout=999999,
-                        tweet_mode='extended').items(20)
+                        tweet_mode='extended').items(50)
     while True:
         try:
             tweet = found_tweets.next()
