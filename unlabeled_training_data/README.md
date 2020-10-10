@@ -6,10 +6,11 @@ After unzipping, to read in the data:
 import os
 from sportsbot.datasets import read_data
 
-file_names = os.listdir('unlabeled_training_data/{unzipped_file_name}/')
+dir_path = 'unlabeled_training_data/{unzipped_file_name}/'
+file_names = os.listdir(dir_path)
 data = []
 for name in file_names:
-    data += read_data(name)
+    data += read_data(dir_path+name)
 ```
 
 Each `Conversation` object in the `data` list will have a training template ready to be label. 
