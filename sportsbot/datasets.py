@@ -136,11 +136,12 @@ def prepare_labeled_datasets(conversations, labels, jsonl_file='labeled_data.jso
     """
     if len(conversations) != len(labels):
         raise AssertionError("Must have an equal number of conversations and labels")
-    for index, _ in enumerate(conversations):
-        conversations[index].template = conversations[index].template + labels[index]
-        conversations[index].label = labels[index]
-    _save_data(conversations,jsonl_file)
-    return conversations
+    conversations_return = conversations[:]
+    for index, _ in enumerate(conversations_return):
+        conversations_return[index].template = conversations_return[index].template + labels[index]
+        conversations_return[index].label = labels[index]
+    _save_data(conversations_return,jsonl_file)
+    return conversations_return
 
 def _prepare_few_shot_testing_set(shots, conversations, topic, few_shot_labels):
     accumulate_prompts = ''
