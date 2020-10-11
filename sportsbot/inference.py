@@ -52,11 +52,11 @@ def few_shot_test(test_data,
     templated_conversations = []
     confidence = defaultdict()
     shots_and_tests, prompts = _prepare_few_shot_testing_set(
-                                                                                training_conversations,
-                                                                                test_data,
-                                                                                topic,
-                                                                                training_labels
-                                                   )
+                                                            training_conversations,
+                                                            test_data,
+                                                            topic,
+                                                            training_labels
+                               )
     for i, tweets in enumerate(shots_and_tests):
         input_ids = tokenizer.encode(tweets,return_tensors='tf')
         output = model(input_ids)

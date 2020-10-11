@@ -28,7 +28,7 @@ def get_conversations(search_terms,
                         jsonlines_file='output.jsonl',
                         max_conversation_length=10):
     """
-    Collects up to 20 relevant conversations using Tweepy's wrapper for Twitter's API,
+    Collects up to 50 relevant conversations using Tweepy's wrapper for Twitter's API,
     processes them into dataclasses and stores them with jsonlines file.
     """
     api = _create_api()
