@@ -174,3 +174,14 @@ def _filter_terms(filters, tweet=False,find_first=False):
         for term in filters:
             subtract_terms += ' -'+term
         return subtract_terms
+
+def post_reply(tweet, message):
+    """
+    posts `message` response to `tweet`
+    """
+    api = _create_api()
+    try:
+        msg = "@"+tweet.screen_name + " " + message
+        reply_tweet = api.update_status(status=msg, in_reply_to_status_id=tweet.id)
+    except tweepy.TweepError as err:
+        print(err)
