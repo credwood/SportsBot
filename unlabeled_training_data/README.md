@@ -8,7 +8,7 @@ After unzipping, to read in all of the data in a folder:
 import os
 from sportsbot.datasets import read_data
 
-dir_path = 'unlabeled_training_data/{unzipped_file_name}/'
+dir_path = 'unlabeled_training_data/{unzipped_file_name}/' #folder name might be 'unlabeled_training'
 file_names = os.listdir(dir_path)
 data = []
 for name in file_names:
