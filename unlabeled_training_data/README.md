@@ -1,4 +1,4 @@
-#training Data
+# Training Data
 
 Each zipped folder will contain a day's worth of datasets collected. The number of conversations in each file will vary anywhere between 0 and 50 (20 for Oct. 9th).
 
