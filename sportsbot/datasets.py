@@ -37,6 +37,7 @@ class Conversation:
     thread: list
     label: str
     template: str
+    handle_tested: str
     model_statistics: list
 
 @dataclass_json
@@ -72,7 +73,7 @@ def _save_data(data, file):
         for conversation in data:
             writer.write(conversation.to_json())
 
-def read_data(file,conversation_obj=True):
+def read_data(file,conversation_obj=True, old=False):
     """
     reads jasonl data into either a `Conversation`
     object, or a `ConversationPrompt` object.
@@ -96,7 +97,8 @@ def read_data(file,conversation_obj=True):
                                             tweet["profile_description"]
                                            )
                                     )
-                conversations.append(
+                if old:
+                    conversations.append(
                                 Conversation(
                                             conv_list,
                                             conv["label"],
@@ -104,6 +106,16 @@ def read_data(file,conversation_obj=True):
                                             conv["model_statistics"]
                                             )
                                     )
+                else:
+                    conversations.append(
+                                    Conversation(
+                                                conv_list,
+                                                conv["label"],
+                                                conv["template"],
+                                                conv["handle_tested"],
+                                                conv["model_statistics"]
+                                                )
+                                        )
         else:
             for conv in reader:
                 conv = json.loads(conv)
@@ -129,7 +141,7 @@ def _prepare_conv_template(conversation, topic, end_prompt=None):
         end_prompt = (f"{new_line}--{new_line}"
                         f"Question: Does {name} like {topic}? {new_line}Answer:")
     full_template = conversation_str + end_prompt
-    return Conversation(conversation, '', full_template, [])
+    return Conversation(conversation, '', full_template, name,[])
 
 def prepare_labeled_datasets(conversations, labels, jsonl_file='labeled_data.jsonl', numeric=False):
     """
@@ -147,7 +159,7 @@ def prepare_labeled_datasets(conversations, labels, jsonl_file='labeled_data.jso
 
 def _find_bucket(val, numeric):
     if numeric:
-        return val
+        return " "+str(val)
     elif val == ' N/A':
         return val
     elif val == 1 or val == 2:

@@ -17,7 +17,7 @@ class TestJsonlinesFunctions(unittest.TestCase):
                                         122,
                                         1,
                                         "dummy profile"
-                                        )],"label","template",empty_list)
+                                        )],"label","template",'',empty_list)
         _save_data([test_conv_obj], "read_write_test.jsonl")
 
         self.assertEqual(test_conv_obj, read_data("read_write_test.jsonl")[0])

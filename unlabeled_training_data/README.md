@@ -27,7 +27,7 @@ For now, to add labels to the template, make a list (`labels`) of the labels for
 ```sh
 from sportsbot.datasets import prepare_labeled_datasets
 
-labeled_data = prepare_labeled_datasets(data, labels, jsonl_file=labeled_data_{collection date})
+labeled_data = prepare_labeled_datasets(data, labels, jsonl_file=labeled_data_{collection date}, numeric=False)
 ```
 
 The function will return the labeled objects and save them in another jsonl file. Please use the naming convention `labeled_data_{collection date}`, where collection date is the date in the data file's name.
