@@ -117,7 +117,7 @@ def read_data(file,conversation_obj=True):
 
     return conversations
 
-def _prepare_conv_template(conversation, topic):
+def _prepare_conv_template(conversation, topic, end_prompt=None):
     conversation_str = ''
     new_line = '\n'
     names = set([])
@@ -125,8 +125,9 @@ def _prepare_conv_template(conversation, topic):
         conversation_str += f"{tweet.user_handle}: {tweet.content}{new_line}"
         names.add(tweet.user_handle)
     name = random.choice(list(names))
-    end_prompt = (f"{new_line}--{new_line}"
-                    f"Question: Does {name} like {topic}? {new_line}Answer:")
+    if end_prompt is None:
+        end_prompt = (f"{new_line}--{new_line}"
+                        f"Question: Does {name} like {topic}? {new_line}Answer:")
     full_template = conversation_str + end_prompt
     return Conversation(conversation, '', full_template, [])
 
