@@ -46,6 +46,8 @@ cd into SportsBot and install the dependencies:
 ```
 (The environment in which this module was deveoped was a pyenv virtualenv 3.7.6.)
 
+## Collecting Conversations
+
 Once the dependencies are installed, you can get started with:
 
 ```sh
@@ -58,9 +60,19 @@ data = get_conversations(search_terms,
                         max_conversation_length=10):
 ```
 
-This function requires a search phrase, a list of words and/or phrases that should not appear in the conversation and a path to the file in which to store the `Conversation` objects. The default file is `output.jsonl`, which will be in the `sportsbot` folder. `Conversation` objects will contain each conversation in template form; you can either pass this into the `train` function, or you can label the data for feature training (explained below).
+This function requires a search phrase, a list of words and/or phrases that should not appear in the conversation and a path to the file in which to store the `Conversation` objects. The default file is `output.jsonl`, which will be in the `sportsbot` folder. `Conversation` objects will contain each conversation in template form; you can either pass this into the `predict` function, or you can label the data for feature training.
 
-To test the classifier, you can create a list of labels for the testing sets and run `few_shot_test`:
+## Labeling Data and Training Models
+
+To add labels to templates for `Conversation` objects for feature training, use `prepare_labeled_datasets`. If you want to keep the labels as integer values, set numeric to `True`.
+
+```sh
+from sportsbot.dataset import prepare_labeled_datasets
+
+prepare_labeled_datasets(conversations, labels, jsonl_file='labeled_data.jsonl', numeric=False)
+```
+
+For few-shot training, you can create a list of labels for the testing sets and run `few_shot_test`:
 
 ```sh
 from sportsbot.inference import few_shot_train, download_model_tokenizer
@@ -89,12 +101,4 @@ conversations = predict(test_convs,
             num_top_softmax=15,
             jsonlines_file_out='add_stats_output.jsonl'
         ):
-```
-
-To add labels to templates for `Conversation` objects for feature training, use `prepare_labeled_datasets`
-
-```sh
-from sportsbot.dataset import prepare_labeled_datasets
-
-prepare_labeled_datasets(conversations, labels, jsonl_file='labeled_data.jsonl')
 ```

@@ -131,7 +131,7 @@ def _prepare_conv_template(conversation, topic, end_prompt=None):
     full_template = conversation_str + end_prompt
     return Conversation(conversation, '', full_template, [])
 
-def prepare_labeled_datasets(conversations, labels, jsonl_file='labeled_data.jsonl'):
+def prepare_labeled_datasets(conversations, labels, jsonl_file='labeled_data.jsonl', numeric=False):
     """
     add template to `Conversation` object. Returns and saves objects.
     """
@@ -139,10 +139,27 @@ def prepare_labeled_datasets(conversations, labels, jsonl_file='labeled_data.jso
         raise AssertionError("Must have an equal number of conversations and labels")
     conversations_return = conversations[:]
     for index, _ in enumerate(conversations_return):
+        label = _find_bucket(labels[index], numeric=numeric)
         conversations_return[index].template = conversations_return[index].template + labels[index]
-        conversations_return[index].label = labels[index]
+        conversations_return[index].label = label
     _save_data(conversations_return,jsonl_file)
     return conversations_return
+
+def _find_bucket(val, numeric):
+    if numeric:
+        return val
+    elif val == ' N/A':
+        return val
+    elif val == 1 or val == 2:
+        return ' No'
+    elif val == 3 or val == 4:
+        return ' Unlikely'
+    elif val == 5 or val == 6:
+        return ' Maybe'
+    elif val == 7 or val == 8:
+        return ' Probably'
+    elif val == 9 or val == 10:
+        return ' Yes'
 
 def _prepare_few_shot_testing_set(shots, conversations, topic, few_shot_labels):
     accumulate_prompts = ''
