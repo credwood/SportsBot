@@ -103,6 +103,7 @@ def read_data(file,conversation_obj=True, old=False):
                                             conv_list,
                                             conv["label"],
                                             conv["template"],
+                                            '',
                                             conv["model_statistics"]
                                             )
                                     )
@@ -129,18 +130,20 @@ def read_data(file,conversation_obj=True, old=False):
 
     return conversations
 
-def _prepare_conv_template(conversation, topic, end_prompt=None):
+def _prepare_conv_template(conversation, topic, end_prompt=None, conv_obj=False):
     conversation_str = ''
     new_line = '\n'
     names = set([])
     for tweet in conversation:
         conversation_str += f"{tweet.user_handle}: {tweet.content}{new_line}"
         names.add(tweet.user_handle)
-    name = random.choice(list(names))
+    name = random.choice(list(names)) if not conv_obj else conv_obj.handle_tested
     if end_prompt is None:
         end_prompt = (f"{new_line}--{new_line}"
                         f"Question: Does {name} like {topic}? {new_line}Answer:")
-    full_template = conversation_str + end_prompt
+        full_template = conversation_str + end_prompt
+    else:
+        full_template = conversation_str + end_prompt[0] + name + end_prompt[1]
     return Conversation(conversation, '', full_template, name,[])
 
 def prepare_labeled_datasets(conversations, labels, jsonl_file='labeled_data.jsonl', numeric=False):
@@ -152,25 +155,26 @@ def prepare_labeled_datasets(conversations, labels, jsonl_file='labeled_data.jso
     conversations_return = conversations[:]
     for index, _ in enumerate(conversations_return):
         label = _find_bucket(labels[index], numeric=numeric)
-        conversations_return[index].template = conversations_return[index].template + labels[index]
-        conversations_return[index].label = label
+        print(label)
+        conversations_return[index].template = conversations_return[index].template + label
+        conversations_return[index].label = labels[index]
     _save_data(conversations_return,jsonl_file)
     return conversations_return
 
 def _find_bucket(val, numeric):
     if numeric:
         return " "+str(val)
-    elif val == ' N/A':
+    if val == ' N/A':
         return val
-    elif val == 1 or val == 2:
+    if val == 1 or val == 2:
         return ' No'
-    elif val == 3 or val == 4:
+    if val == 3 or val == 4:
         return ' Unlikely'
-    elif val == 5 or val == 6:
+    if val == 5 or val == 6:
         return ' Maybe'
-    elif val == 7 or val == 8:
+    if val == 7 or val == 8:
         return ' Probably'
-    elif val == 9 or val == 10:
+    if val == 9 or val == 10:
         return ' Yes'
 
 def _prepare_few_shot_testing_set(shots, conversations, topic, few_shot_labels):
