@@ -155,7 +155,6 @@ def prepare_labeled_datasets(conversations, labels, jsonl_file='labeled_data.jso
     conversations_return = conversations[:]
     for index, _ in enumerate(conversations_return):
         label = _find_bucket(labels[index], numeric=numeric)
-        print(label)
         conversations_return[index].template = conversations_return[index].template + label
         conversations_return[index].label = labels[index]
     _save_data(conversations_return,jsonl_file)
@@ -164,18 +163,21 @@ def prepare_labeled_datasets(conversations, labels, jsonl_file='labeled_data.jso
 def _find_bucket(val, numeric):
     if numeric:
         return " "+str(val)
-    if val == ' N/A':
+    elif val == ' N/A':
         return val
-    if val == 1 or val == 2:
+    elif val == 1 or val == 2:
         return ' No'
-    if val == 3 or val == 4:
+    elif val == 3 or val == 4:
         return ' Unlikely'
-    if val == 5 or val == 6:
+    elif val == 5 or val == 6:
         return ' Maybe'
-    if val == 7 or val == 8:
+    elif val == 7 or val == 8:
         return ' Probably'
-    if val == 9 or val == 10:
+    elif val == 9 or val == 10:
         return ' Yes'
+    else:
+        raise AssertionError ((f"invalid label: {val}. "
+                        f"Must be an integer between 1 and 10, inclusive or ' N/A'"))
 
 def _prepare_few_shot_testing_set(shots, conversations, topic, few_shot_labels):
     accumulate_prompts = ''
