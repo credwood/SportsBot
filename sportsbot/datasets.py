@@ -156,7 +156,7 @@ def prepare_labeled_datasets(conversations, labels, jsonl_file='labeled_data.jso
     for index, _ in enumerate(conversations_return):
         label = _find_bucket(labels[index], numeric=numeric)
         conversations_return[index].template = conversations_return[index].template + label
-        conversations_return[index].label = labels[index]
+        conversations_return[index].label = str(labels[index])
     _save_data(conversations_return,jsonl_file)
     return conversations_return
 
