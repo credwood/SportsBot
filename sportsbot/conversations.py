@@ -1,6 +1,6 @@
 """
 This module connects to Twitter's API using Tweepy
-and returns up to 20 conversations based on user's parameters
+and returns up to 50 conversations based on user's parameters
 """
 import os
 import tweepy
