@@ -177,7 +177,7 @@ def _find_bucket(val, numeric):
         return ' Yes'
     else:
         raise AssertionError ((f"invalid label: {val}. "
-                        f"Must be an integer between 1 and 10, inclusive or ' N/A'"))
+                        f"Must be an integer between 1 and 10 (inclusive) or ' N/A'"))
 
 def _prepare_few_shot_testing_set(shots, conversations, topic, few_shot_labels):
     accumulate_prompts = ''
