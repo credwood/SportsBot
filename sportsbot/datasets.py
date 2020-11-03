@@ -35,7 +35,7 @@ class Conversation:
     making up a conversation thread.
     """
     thread: list
-    label: str
+    label: list #[numeric label, template label]
     template: str
     handle_tested: str
     model_statistics: list
@@ -144,7 +144,7 @@ def _prepare_conv_template(conversation, topic, end_prompt=None, conv_obj=False)
         full_template = conversation_str + end_prompt
     else:
         full_template = conversation_str + end_prompt[0] + name + end_prompt[1]
-    return Conversation(conversation, '', full_template, name,[])
+    return Conversation(conversation, [], full_template, name,[])
 
 def prepare_labeled_datasets(conversations, labels, jsonl_file='labeled_data.jsonl', numeric=False):
     """
@@ -155,8 +155,7 @@ def prepare_labeled_datasets(conversations, labels, jsonl_file='labeled_data.jso
     conversations_return = conversations[:]
     for index, _ in enumerate(conversations_return):
         label = _find_bucket(labels[index], numeric=numeric)
-        conversations_return[index].template = conversations_return[index].template + label
-        conversations_return[index].label = str(labels[index])
+        conversations_return[index].label = [str(labels[index]),label]
     _save_data(conversations_return,jsonl_file)
     return conversations_return
 
