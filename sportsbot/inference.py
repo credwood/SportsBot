@@ -58,9 +58,9 @@ def few_shot_test(test_data,
                                                             training_labels
                                )
     for i, tweets in enumerate(shots_and_tests):
-        input_ids = tokenizer.encode(tweets,return_tensors='tf')
+        input_ids = tokenizer.encode(tweets,return_tensors='pt')
         output = model(input_ids)
-        predicted_prob = softmax(output.logits[0, -1, :], axis=0)
+        predicted_prob = softmax(output.logits[0, -1, :], axis=0) #add for batch size
         #probabilities_dict[f"{i+1}_test"] = predicted_prob
 
         top_softmax = _top_softmax(predicted_prob,tokenizer,num_top_softmax)
@@ -94,9 +94,9 @@ def predict(test_convs,
     conversations = []
     for i, test_conv in enumerate(test_convs):
         tweet_template = test_conv.template
-        input_ids = tokenizer.encode(tweet_template,return_tensors='tf')
+        input_ids = tokenizer.encode(tweet_template,return_tensors='pt')
         output = model(input_ids)
-        predicted_prob = softmax(output.logits[0, -1, :], axis=0)
+        predicted_prob = softmax(output.logits[0, -1, :], axis=0) #add for batch size
         top_softmax = _top_softmax(predicted_prob,tokenizer, num_top_softmax)
         test_convs[i].model_statistics = top_softmax
         conversations.append(test_convs[i])
