@@ -1,11 +1,11 @@
 """
 Functions for testing Hugginface's GPT-2 trained model
 """
+import json
 from collections import defaultdict
-#import tensorflow as tf
-from scipy.special import softmax
-import numpy as np
-from transformers import TFGPT2LMHeadModel, GPT2Tokenizer
+import torch
+import torch.nn.functional as F
+from transformers import GPT2LMHeadModel, GPT2Tokenizer
 from .datasets import _prepare_few_shot_testing_set, _save_data, ConversationPrompt
 
 def download_model_tokenizer(model_type="gpt2"):
@@ -16,7 +16,7 @@ def download_model_tokenizer(model_type="gpt2"):
     tokenizer_instantiate.pad_token = tokenizer_instantiate.eos_token
 
     # add the EOS token as PAD token to avoid warnings
-    model_instantiate = TFGPT2LMHeadModel.from_pretrained(model_type,
+    model_instantiate = GPT2LMHeadModel.from_pretrained(model_type,
                                             pad_token_id=tokenizer_instantiate.eos_token_id,
                                             return_dict=True
                                             )
@@ -60,7 +60,7 @@ def few_shot_test(test_data,
     for i, tweets in enumerate(shots_and_tests):
         input_ids = tokenizer.encode(tweets,return_tensors='pt')
         output = model(input_ids)
-        predicted_prob = softmax(output.logits[0, -1, :], axis=0) #add for batch size
+        predicted_prob = F.softmax(output.logits[0, -1, :], dim=-1) #add for batch size
         #probabilities_dict[f"{i+1}_test"] = predicted_prob
 
         top_softmax = _top_softmax(predicted_prob,tokenizer,num_top_softmax)
@@ -84,23 +84,39 @@ def few_shot_test(test_data,
 def predict(test_convs,
             tokenizer,
             model,
-            num_top_softmax=15,
-            jsonlines_file_out='add_stats_output.jsonl'
+            device="cuda",
+            num_top_softmax=20,
+            json_file_out='add_stats_output.jsonl',
+            labels=None
         ):
     """
     Function for finetuned model. saves and returns `Conversation` objects
     with model statistics (top SoftMax values for each conversation).
     """
-    conversations = []
+    model.eval()
+    model.to(device)
+    conversations = defaultdict()
+    answers = []
     for i, test_conv in enumerate(test_convs):
-        tweet_template = test_conv.template
-        input_ids = tokenizer.encode(tweet_template,return_tensors='pt')
-        output = model(input_ids)
-        predicted_prob = softmax(output.logits[0, -1, :], axis=0) #add for batch size
-        top_softmax = _top_softmax(predicted_prob,tokenizer, num_top_softmax)
-        test_convs[i].model_statistics = top_softmax
-        conversations.append(test_convs[i])
-    _save_data(conversations,jsonlines_file_out)
+        tweet_template = test_conv
+        input_ids = tokenizer.encode(tweet_template)
+        input_tensor = torch.LongTensor(input_ids).to(device)
+        output = model(input_tensor,return_dict=True)
+        logits = output.logits
+        logits = logits[...,-1,:]
+        predicted_prob = F.softmax(logits, dim=-1)
+        top_softmax = _top_softmax(predicted_prob, tokenizer, num_top_softmax)
+        answers.append(top_softmax[0][0])
+        if labels:
+            softmax_tokens = _label_softmax(predicted_prob, tokenizer, [' No',' N/A',' Unlikely',' Maybe',' Probably',' Yes'])
+            conversations[i] = [test_conv, softmax_tokens, labels[i], top_softmax]
+        else:
+            softmax_tokens = _label_softmax(predicted_prob, tokenizer, [' No',' N/A',' Unlikely',' Maybe',' Probably',' Yes'])
+            conversations[i] = [test_conv, softmax_tokens, top_softmax]
+    if labels:
+        conversations["accuracy"] = str(_calculate_accuracy(labels, answers))
+    with open(json_file_out, "w") as dump:
+        json.dump(conversations, dump, indent=4)
     return conversations
 
 def _calculate_accuracy(labels, model_answers):
@@ -112,5 +128,10 @@ def _calculate_accuracy(labels, model_answers):
 
 def _top_softmax(prob_dict, tokenizer, num_tokens):
     num_tokens = min(len(prob_dict), num_tokens)
-    sorted_indices = np.argsort(prob_dict)[::-1][:num_tokens]
-    return [{tokenizer.decode([index]): str(prob_dict[index])} for index in sorted_indices]
+    _, sorted_indices = torch.sort(prob_dict[:], descending=True)
+    sorted_indices = list(sorted_indices.detach().numpy())
+    return [(tokenizer.decode([index]), str(prob_dict[index])) for index in sorted_indices[:num_tokens]]
+
+def _label_softmax(prob_dict, tokenizer, labels_lst):
+    prob_dict = list(prob_dict.detach().numpy())
+    return [{label: str(prob_dict[tokenizer.encode(label)[0]])} for label in labels_lst]
