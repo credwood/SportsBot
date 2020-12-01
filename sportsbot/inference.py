@@ -135,3 +135,9 @@ def _top_softmax(prob_dict, tokenizer, num_tokens):
 def _label_softmax(prob_dict, tokenizer, labels_lst):
     prob_dict = list(prob_dict.detach().numpy())
     return [{label: str(prob_dict[tokenizer.encode(label)[0]])} for label in labels_lst]
+
+def _log_prob(logits, labels_lst, num_tokens):
+    _, sorted_indices = torch.sort(logits[:], descending=True)
+    sorted_indices = list(sorted_indices.detach().numpy())
+    #sum_exp = log prob code
+    return [(tokenizer.decode([index]), str(logits[index])) for index in sorted_indices[:num_tokens]]

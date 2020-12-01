@@ -81,20 +81,28 @@ def train(
     return model
 
 def create_batches(data, batch_size,max_seq_len):
-    data = sorted(data, key=lambda x: len(x))
-    data = [record for record in data if len(record) <= max_seq_len]
+    data = sorted(data, key=lambda x: len(x.template))
+    data = [record for record in data if len(record.template) <= max_seq_len]
     data = [data[index:index+batch_size] for index in range(0,len(data), batch_size)]
     random.shuffle(data)
     return data
 
-def tokenize_data(templates, tokenizer, device):
+def tokenize_data(conversations, tokenizer, device):
     """returns a list of tokenized torch tensors"""
-    tokens = [tokenizer.encode(template) for template in templates]
     # padding_value can be whatever...
-    inputs = pad_sequence([torch.LongTensor(x) for x in tokens], padding_value=tokenizer.pad_token_id).to(device)
+    tokens = [[tokenizer.encode(conv.template) for conv in conversations] ]
+    inputs = pad_sequence([torch.LongTensor(template) for template in tokens], padding_value=tokenizer.pad_token_id).to(device)
     # 1 for real tokens and 0 for padded tokens
     mask = (inputs != tokenizer.pad_token_id).float()
-    labels = inputs
+    #for the labels, pad conversation part of template with -100
+    label_mask = []
+    for conversation in conversations:
+        conv_thread = ""
+        for tweet in conversation.thread:
+            conv_tread+= f"{tweet.user_handle}: {tweet.content}\n"
+        label_mask.append(len(tokenizer.encode(conv_thread)))
+    token_labels = [[-100 if index < label_mask[i] else tokens[i][index] for index in range(len(tokens[i]))] for i in range(len(tokens))]
+    labels = pad_sequence([torch.LongTensor(template) for template in token_labels], padding_value=tokenizer.pad_token_id).to(device)
     return inputs, labels, mask
 
 

@@ -35,7 +35,7 @@ class Conversation:
     making up a conversation thread.
     """
     thread: list
-    label: list #[numeric label, template label]
+    label: list #last element is topic
     template: str
     handle_tested: str
     model_statistics: list
@@ -130,7 +130,7 @@ def read_data(file,conversation_obj=True, old=False):
 
     return conversations
 
-def _prepare_conv_template(conversation, topic, end_prompt=None, conv_obj=False):
+def _prepare_conv_template(conversation, topic, question=None,end_prompt=None, conv_obj=False):
     conversation_str = ''
     new_line = '\n'
     names = set([])
@@ -143,10 +143,22 @@ def _prepare_conv_template(conversation, topic, end_prompt=None, conv_obj=False)
                         f"Question: Does {name} like {topic}? {new_line}Answer:")
         full_template = conversation_str + end_prompt
     else:
-        full_template = conversation_str + end_prompt[0] + name + end_prompt[1]
-    return Conversation(conversation, [], full_template, name,[])
+        if question == 1 or question == 2:
+            full_template = conversation_str + end_prompt[0] + name + end_prompt[1] + conv_obj.label[-1] + end_prompt[2]
+        elif question == 4 or question == 5:
+            full_template = conversation_str + end_prompt[0] + name + end_prompt[1]
+        elif question == 3:
+            full_template = conversation_str + end_prompt[0] + name + end_prompt[1] + name + end_prompt[2]
+        else:
+            raise AssertionError ("Must specify question number")
 
-def prepare_labeled_datasets(conversations, labels, jsonl_file='labeled_data.jsonl', numeric=False):
+    if conv_obj:
+        labels = conv_obj.label
+    else:
+        labels = []
+    return Conversation(conversation, labels, full_template, name,[])
+
+def prepare_labeled_datasets(conversations, labels,jsonl_file='labeled_data.jsonl', label_dict=None):
     """
     add template to `Conversation` object. Returns and saves objects.
     """
@@ -154,29 +166,10 @@ def prepare_labeled_datasets(conversations, labels, jsonl_file='labeled_data.jso
         raise AssertionError("Must have an equal number of conversations and labels")
     conversations_return = conversations[:]
     for index, _ in enumerate(conversations_return):
-        label = _find_bucket(labels[index], numeric=numeric)
-        conversations_return[index].label = [str(labels[index]),label]
+        label = label_dict[labels[index]]
+        conversations_return[index].template = conversations_return[index].template+label
     _save_data(conversations_return,jsonl_file)
     return conversations_return
-
-def _find_bucket(val, numeric):
-    if numeric:
-        return " "+str(val)
-    elif val == ' N/A':
-        return val
-    elif val == 1 or val == 2:
-        return ' No'
-    elif val == 3 or val == 4:
-        return ' Unlikely'
-    elif val == 5 or val == 6:
-        return ' Maybe'
-    elif val == 7 or val == 8:
-        return ' Probably'
-    elif val == 9 or val == 10:
-        return ' Yes'
-    else:
-        raise AssertionError ((f"invalid label: {val}. "
-                        f"Must be an integer between 1 and 10 (inclusive) or ' N/A'"))
 
 def _prepare_few_shot_testing_set(shots, conversations, topic, few_shot_labels):
     accumulate_prompts = ''
