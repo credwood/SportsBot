@@ -1,10 +1,13 @@
 import random
+from collections import defaultdict
 import os
 import torch
-
-from transformers import GPT2Tokenizer, GPT2LMHeadModel, AdamW, Adafactor, get_linear_schedule_with_warmup
+import pandas as pd
+import matplotlib.pyplot as plt
+from transformers import GPT2Tokenizer, GPT2LMHeadModel, AdamW, get_linear_schedule_with_warmup
 from tqdm import tqdm
-from torch.nn.utils.rnn import pad_sequence
+from IPython import display
+from IPython.display import display as dsp
 #import torch.nn.functional as F
 from .inference import predict
 
@@ -24,9 +27,9 @@ def train(
     device="cuda",
     output_dir=".",
     output_prefix="gpt2_fintune",
-    test_mode=False,
     save_model_on_epoch=True,
-    eval_between_epochs=True
+    eval_between_epochs=True,
+    validation_file="validation"
 ):
 
     # We can add these special tokens to the vocabulary and the embeddings of the model:
@@ -38,14 +41,19 @@ def train(
     model.train()
 
     optimizer = AdamW(model.parameters(), lr=lr,weight_decay=0.0)
-    #optimizer = Adafactor(model.parameters())
     scheduler = get_linear_schedule_with_warmup(
         optimizer, num_warmup_steps=warmup_steps, num_training_steps=-1
     )
 
     #accumulating_batch_count = 0
     #input_tensor = None
-
+    plt.ion()
+    fig, (ax_accuracy, ax_loss) = plt.subplots(1, 2, tight_layout=True)
+    accuracy = []
+    validation_loss = []
+    acc_loss = []
+    running_loss = 0
+    all_model_responses = defaultdict()
     for epoch in range(epochs):
 
         model.train()
@@ -55,35 +63,53 @@ def train(
         #batched_dataset = create_batches(dataset,batch_size,max_seq_len)
         batched_dataset = [conv for conv in dataset if len(conv.template) < max_seq_len]
         for index, batch in tqdm(enumerate(batched_dataset),ascii=True, desc="current batch"):
-            """
-            stuffing tensors:
-                (input_tensor, carry_on, remainder) = pack_tensor(entry, input_tensor, 1024)
-                if carry_on and idx != len(train_dataloader) - 1:
-                    continue
-            """
-            #input_tensor = input_tensor.to(device)
-            batched_tensors, labels, mask = tokenize_data(batch, tokenizer, device)
-            outputs = model(batched_tensors, labels=labels) #
-            loss = outputs[0]
-            if (index+1)%99==0 or index == len(dataset)-1:
-                print(f"loss on the ({index}+1)%99 iteration: {loss}")
-            loss.backward()
 
-            if (index+1)%batch_size==0 or index == len(dataset)-1:
+            #input_tensor = input_tensor.to(device)
+            batched_tensors, labels = tokenize_data(batch, tokenizer, device)
+            outputs = model(batched_tensors, labels=labels)
+            loss = outputs[0]
+            loss.backward()
+            loss_val = loss.item()
+            running_loss += loss_val
+
+            if (index+1)%batch_size==0 or index == len(batched_dataset)-1:
                 optimizer.step()
                 scheduler.step()
                 optimizer.zero_grad()
                 model.zero_grad()
-              
+
+            if index == len(batched_dataset)-1:
+                acc_loss.append(running_loss/(index+1))
+                running_loss = 0
+                #print(f"loss on {index} iteration of the {epoch} epoch: {loss_val}")
 
         if eval_between_epochs:
             model.eval()
-            predict(validation_set,tokenizer, model,json_file_out=f"validation_{epoch}.json",labels=validation_labels, labels_dict=labels_dict)
+            model_stats = predict(validation_set,
+                                    tokenizer,
+                                    model,json_file_out=validation_file+f"_{epoch}",
+                                    labels=validation_labels,
+                                    labels_dict=labels_dict
+                          )
+            model_responses = defaultdict()
+            model_responses["correct answer"] = [labels_dict[model_stats[str(index)][2]] for index in range(len(validation_set))]
+            model_responses["1st choice"] = [model_stats[str(index)][3][0][0] for index in range(len(validation_set))]
+            model_responses["2nd choice"] = [model_stats[str(index)][3][1][0] for index in range(len(validation_set))]
+            model_responses["3rd choice"] = [model_stats[str(index)][3][2][0] for index in range(len(validation_set))]
+            all_model_responses[epoch] = model_responses
+            accuracy.append(float(model_stats["accuracy"]))
+            validation_loss.append(float(model_stats["validation_loss"]))
+            plot_loss_accuracy(accuracy, acc_loss, validation_loss, ax_accuracy, ax_loss, epoch+2, fig)
         if save_model_on_epoch:
             torch.save(
                 model.state_dict(),
                 os.path.join(output_dir, f"{output_prefix}-{epoch}.pt"),
             )
+    for stat in all_model_responses:
+        top_predicts = pd.DataFrame.from_dict(all_model_responses[stat])
+        print(f"epoch {stat+1}: ")
+        dsp(top_predicts)
+    plt.savefig(f"loss_accuracy_graph_{output_prefix}.png")
     return model
 
 def create_batches(data, batch_size,max_seq_len):
@@ -101,28 +127,29 @@ def tokenize_data(conversation, tokenizer, device):
     assert len(tokenizer.encode(label_check)) == 1
     assert label_check == tokenizer.decode(tokens[-1])
     inputs = torch.LongTensor(tokens).to(device)
-    #inputs = pad_sequence([torch.LongTensor(template) for template in tokens], padding_value=tokenizer.pad_token_id).to(device)
-    # 1 for real tokens and 0 for padded tokens
-    mask = (inputs != tokenizer.pad_token_id).float()
     #for the labels, pad conversation part of template with -100
-    #label_mask = []
-    #for conversation in conversations:
-        #conv_thread = ""
-        #for tweet in conversation.thread:
-            #conv_thread+= f"{tweet.user_handle}: {tweet.content}\n"
-        #label_mask.append(len(tokenizer.encode(conv_thread)))
-    #token_labels = [[-100. if index < label_mask[i] else tokens[i][index] for index in range(len(tokens[i]))] for i in range(len(tokens))]
-    #labels = pad_sequence([torch.LongTensor(template) for template in token_labels], padding_value=tokenizer.pad_token_id).to(device)
-    labels = inputs[:]
-    # replace the ids of the padded tokens (where token_id==padded_id) with `-1`
-    #labels = inputs.masked_fill(inputs == tokenizer.pad_token_id, -1)
-    return inputs, labels, mask
+    conv_thread = ""
+    for tweet in conversation.thread:
+        conv_thread+= f"{tweet.user_handle}: {tweet.content}\n"
+    label_mask = len(tokenizer.encode(conv_thread))
+    token_labels = [-100. if index < label_mask else tokens[index] for index in range(len(tokens))]
+    labels = torch.LongTensor(token_labels).to(device)
+    return inputs, labels
 
-def pack_tensor(new_tensor, packed_tensor, max_seq_len):
-    if packed_tensor is None:
-        return new_tensor, True, None
-    if new_tensor.size()[0] + packed_tensor.size()[0] > max_seq_len:
-        return packed_tensor, False, new_tensor
-    else:
-        packed_tensor = torch.cat([new_tensor, packed_tensor])
-        return packed_tensor, True, None
+def plot_loss_accuracy(updated_accuracy, updated_loss, validation_loss, ax_accuracy, ax_loss, epochs, fig):
+    x_axis = [count for count in range(1,epochs)]
+    y_axis = updated_accuracy
+    ax_accuracy.clear()
+    ax_loss.clear()
+    ax_accuracy.set_xlabel("epoch")
+    ax_accuracy.set_ylabel("accuracy")
+    ax_loss.set_xlabel("epoch")
+    ax_loss.set_ylabel("loss")
+    ax_accuracy.set_title("validation acccuracy")
+    ax_loss.set_title("loss")
+    ax_accuracy.plot(x_axis, y_axis, '--ro')
+    ax_loss.plot(x_axis, updated_loss,'--ro', label='training')
+    ax_loss.plot(x_axis, validation_loss, '--bo', label='validation')
+    ax_loss.legend(loc="best")
+    display.clear_output(wait=True)
+    display.display(plt.gcf())

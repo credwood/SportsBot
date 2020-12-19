@@ -7,3 +7,4 @@ tweepy==3.9.0
 jsonlines==1.2.0
 dataclasses_json==0.5.2
 datasets==1.1.2
+matplotlib==3.3.3
