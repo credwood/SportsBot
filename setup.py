@@ -6,7 +6,7 @@ setup(
     url='https://github.com/credwood/SportsBot.git',
     author='Charysse Redwood',
     author_email='charysse.redwood@gmail.com',
-    description='Twitter conversation collector and classifier',
+    description='Sentiment analysis with Twitter conversations; collectoion, fine-tuning and predicting',
     packages=find_packages(),
     install_requires=[
         'numpy==1.18.5',
@@ -17,6 +17,8 @@ setup(
         'tweepy==3.9.0',
         'jsonlines==1.2.0',
         'dataclasses_json==0.5.2',
-        'datasets==1.1.2'
+        'datasets==1.1.2',
+        'matplotlib==3.3.3',
+        'seaborn==0.11.1'
     ],
 )
