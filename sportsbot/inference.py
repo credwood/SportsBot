@@ -30,6 +30,8 @@ def predict(test_convs,
             json_file_out='add_stats_output.jsonl',
             labels=None,
             labels_dict=None,
+            foreign_data=False,
+            logit_labels_only=False
         ):
     """
     Function for finetuned model. saves and returns `Conversation` objects
@@ -57,8 +59,9 @@ def predict(test_convs,
                   " Discussion": 0,
                   " Agreement": 0
     }
+
     for i, test_conv in enumerate(test_convs):
-        tweet_template = test_conv.template
+        tweet_template = test_conv if foreign_data else test_conv.template
         input_ids = tokenizer.encode(tweet_template)
         label = labels_dict["all_values"][labels[i]]
         label = tokenizer.encode(label)
@@ -71,14 +74,21 @@ def predict(test_convs,
         logits = output.logits
         logits = logits[...,-1,:]
         accumulated_loss.append(F.cross_entropy(logits.view(-1, logits.size(-1)), label.view(-1)).item())
-        predicted_prob = F.softmax(logits, dim=-1)
+        predicted_prob = F.softmax(logits, dim=-1) if not logit_labels_only else _labels_only_logits(logits,
+                                                                                                    set(list(labels_dict["all_values"].values())),
+                                                                                                    tokenizer
+                                                                                  )
+
         top_softmax = _top_softmax(predicted_prob, tokenizer, num_top_softmax)
         answers.append(top_softmax[0][0])
         if labels is not None:
-            all_label_softmax = _all_label_softmax(predicted_prob, tokenizer, labels_dict["all_values"])
-            conversations[str(i)] = [test_conv.template, all_label_softmax, labels[i], top_softmax]
+            all_label_softmax = _all_label_softmax(predicted_prob,
+                                                    tokenizer,
+                                                    labels_dict["all_values"]
+                                )
+            conversations[str(i)] = [tweet_template, all_label_softmax, labels[i], top_softmax]
         else:
-            conversations[str(i)] = [test_conv.template, top_softmax]
+            conversations[str(i)] = [tweet_template, top_softmax]
     if labels is not None:
         conversations["accuracy"] = str(_calculate_accuracy(labels, answers, labels_dict["all_values"]))
         conversations["soft_accuracy"] = str(_soft_accuracy(labels, labels_dict["bucketed_labels"], answers))
@@ -134,3 +144,10 @@ def _soft_accuracy(labels, bucketed_labels, model_answers):
         if model_answers[i] in bucketed_labels[answer]:
             correct += 1
     return correct/len(labels)
+
+def _labels_only_logits(logits, labels, tokenizer):
+    _logits = logits[:]
+    tokenized_labels = [tokenizer.encode(label)[0] for label in labels]
+    filter_out = [index for index in range(len(logits)) if index not in tokenized_labels]
+    _logits[...,filter_out] = -10**8
+    return _logits 
