@@ -8,3 +8,4 @@ jsonlines==1.2.0
 dataclasses_json==0.5.2
 datasets==1.1.2
 matplotlib==3.3.3
+seaborn==0.11.1
