@@ -352,12 +352,13 @@ def create_confusion_matrix(
                 xticklabels=classes[question].keys(),
                 yticklabels=classes[question].keys(),
                 annot=True,
-                annot_kws={"size": 16}
+                annot_kws={"size": 16},
+                fmt=".3"
     ) # font size
     #plot.figure.show()
     display.clear_output(wait=True)
     display.display(plt.gcf())
-    if epoch:
+    if epoch is not None:
         plt.savefig(f"confusion_matrix_{output_prefix}_{lr}_{epoch}.png")
         #display.display(plt.gcf())
         #plt.close()
