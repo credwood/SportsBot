@@ -1,3 +1,7 @@
+"""
+Functions for fine-tuning GPT2 models on Twitter conversations or any foreign data.
+Includes visualization functions as well.
+"""
 import random
 from collections import defaultdict
 import os
@@ -14,18 +18,83 @@ from IPython import display
 #from IPython.display import display as dsp
 from .inference import predict
 
+classes_dict = {
+                "Q1": {
+                ' No': 0,
+                ' Unsure': 1,
+                ' Yes': 2,
+                'invalid': 3
+                },
+                "Q2": {
+                ' Negative': 0,
+                ' Positive': 1,
+                ' None': 2,
+                ' Defensive': 3,
+                ' Neutral': 4,
+                ' Unsure':5,
+                'invalid': 6
+                },
+                "yelp": {
+                ' Negative': 0,
+                ' Positive': 1,
+                ' Neutral': 2,
+                'invalid': 3
+                },
+                "Q3": {
+                ' Opposition': 0,
+                ' Discussion': 1,
+                ' Agreement': 2,
+                ' Unsure': 3,
+                ' None': 4,
+                'invalid': 5
+                }
+}
+
+label_dict = {"all_values": {
+                  1: " No",
+                  2: " Remote",
+                  3: " Unsure",
+                  4: " Probably",
+                  5: " Yes",
+                  6: " Neutral",
+                  7: " None",
+                  8: " Positive",
+                  9: " Defensive",
+                  10: " Negative",
+                  11: " Opposition",
+                  12: " Discussion",
+                  13: " Agreement"
+              },
+              "bucketed_labels":{
+                  1: [" No", " Remote"],
+                  2: [" No", " Remote"],
+                  3: [" Unsure"],
+                  4: [" Probably", " Yes"],
+                  5: [" Probably"," Yes"] ,
+                  6: [" Neutral", " None"],
+                  7: [" None", " Neutral"],
+                  8: [" Positive"],
+                  9: [" Defensive"],
+                  10: [" Negative"],
+                  11: [" Opposition",],
+                  12: [" Discussion"],
+                  13: [" Agreement"]    
+              },
+              "baseline_accuracy": 0.333
+}
+
 def train(
     dataset,
     question,
     validation_set=None,
     validation_labels=None,
-    labels_dict=None,
+    labels_dict=label_dict, #defaults to global label_dict but better to use customized
     model=GPT2LMHeadModel,
     tokenizer=GPT2Tokenizer,
     batch_size=1,
     epochs=4,
     lr=2e-5,
-    max_seq_len=768,
+    max_seq_len=1024,
     warmup_steps=5000,
     gpt2_type="gpt2",
     device="cuda",
@@ -39,8 +108,11 @@ def train(
     plot_loss=True,
     prompt=None,
 ):
-
-    # We can add these special tokens to the vocabulary and the embeddings of the model:
+    """
+    Please see README for more detailed parameter comments
+    Training loop for `Conversation` objects or foreign data. Hugging face's GPT2 transformer
+    models
+    """
     tokenizer = tokenizer.from_pretrained(gpt2_type,pad_token="<pad>", padding_side="left") if download else tokenizer
     model = model.from_pretrained(gpt2_type,pad_token_id=tokenizer.pad_token_id) if download else model
     #acc_steps = 100
@@ -54,7 +126,6 @@ def train(
     )
 
     #accumulating_batch_count = 0
-    #input_tensor = None
     plt.ion()
     fig, (ax_accuracy, ax_loss, ax_labels) = plt.subplots(3, 1, figsize=(20,25), tight_layout=True)
     accuracy = []
@@ -62,8 +133,8 @@ def train(
     validation_loss = []
     acc_loss = []
     running_loss = 0
-    label_softmax = []
-    all_model_responses = defaultdict()
+    #label_softmax = []
+    #all_model_responses = defaultdict()
     running_label_loss = {
                   " No": [],
                   " Remote": [],
@@ -168,6 +239,7 @@ def train(
     return model
 
 def create_batches(data, batch_size, max_seq_len):
+    """batches dataset"""
     data_ = sorted(data, key=lambda x: len(x.template))
     data_ = [record for record in data_ if len(record.template) <= max_seq_len]
     data_ = [data_[index:index+batch_size] for index in range(0,len(data_), batch_size)]
@@ -196,7 +268,23 @@ def tokenize_data(conversation, tokenizer, device, foreign_data, prompt):
         labels = torch.LongTensor(token_labels).to(device)
     return inputs, labels
 
-def plot_loss_accuracy(updated_accuracy, updated_soft_accuracy, base_accuracy, updated_loss, validation_loss, ax_accuracy, ax_loss, ax_labels, epochs, fig, labels_softmaxes, labels_dict=None):
+def plot_loss_accuracy(updated_accuracy,
+                        updated_soft_accuracy,
+                        base_accuracy,
+                        updated_loss,
+                        validation_loss,
+                        ax_accuracy,
+                        ax_loss,
+                        ax_labels,
+                        epochs,
+                        fig,
+                        labels_softmaxes,
+                        labels_dict=None
+):
+    """ 
+    plots loss and accuracy graphs, updated each epoch.
+    saves plot when finetuning is done
+    """
     x_axis = [count for count in range(1,epochs)]
     ax_accuracy.clear()
     ax_loss.clear()
@@ -235,39 +323,11 @@ def create_confusion_matrix(
                             epoch=False,
                             lr=False,
                             output_prefix=False,
-                            classes ={
-                              "Q1": {
-                                ' No': 0,
-                                ' Unsure': 1,
-                                ' Yes': 2,
-                                'invalid': 3
-                                },
-                              "Q2": {
-                                ' Negative': 0,
-                                ' Positive': 1,
-                                ' None': 2,
-                                ' Defensive': 3,
-                                ' Neutral': 4,
-                                ' Unsure':5,
-                                'invalid': 6
-                                },
-                              "yelp": {
-                                ' Negative': 0,
-                                ' Positive': 1,
-                                ' Neutral': 2,
-                                'invalid': 3
-                                },
-                              "Q3": {
-                                ' Opposition': 0,
-                                ' Discussion': 1,
-                                ' Agreement': 2,
-                                ' Unsure': 3,
-                                ' None': 4,
-                                'invalid': 5
-                              }
-                            }
+                            classes = classes_dict,
+                            out_file="confusion"
 ):
-    """ creates and plots a confusion matrix given two list (ground_truths and model predictions)
+    """ 
+    creates and plots a confusion matrix given two list (ground_truths and model predictions)
     :param list y_true: list of all ground truths
     :param list y_pred: list of all model predictions
     :param dict classes: dict of classes, converts naturl language response to indexing integer
@@ -301,7 +361,7 @@ def create_confusion_matrix(
         #display.display(plt.gcf())
         #plt.close()
     else:
-        plt.savefig("confussion_matrix.png")
+        plt.savefig(out_file)
 
 def autolabel(rects, ax):
     """Attach a text label above each bar in *rects*, displaying its height."""
@@ -314,6 +374,7 @@ def autolabel(rects, ax):
                     ha='center', va='bottom')
 
 def pil_grid(images, max_horiz=np.iinfo(int).max, file_name='image.png'):
+    """returns images as a single grided image"""
     n_images = len(images)
     n_horiz = min(n_images, max_horiz)
     h_sizes = [0] * n_horiz
