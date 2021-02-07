@@ -34,7 +34,7 @@ def predict(test_convs,
             logit_labels_only=False
         ):
     """
-    Function for finetuned model. saves and returns `Conversation` objects
+    Function for model evaluation. saves and returns `Conversation` objects
     with model statistics (top SoftMax values for each conversation).
     """
     assert  sum([len(tokenizer.encode(label)) == 1 for label in labels_dict["all_values"].values()]) == len(list(labels_dict["all_values"].values()))

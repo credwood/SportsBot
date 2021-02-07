@@ -347,6 +347,7 @@ def create_confusion_matrix(
     sn.set(font_scale=2.0) # for label size
     plt.figure()
     confusion_matrix = confusion_matrix/confusion_matrix.sum()
+    confusion_matrix.round(3)
     sn.heatmap(confusion_matrix,
                 xticklabels=classes[question].keys(),
                 yticklabels=classes[question].keys(),
