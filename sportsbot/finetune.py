@@ -320,9 +320,9 @@ def create_confusion_matrix(
                             y_true,
                             y_pred,
                             question,
-                            epoch=False,
-                            lr=False,
-                            output_prefix=False,
+                            epoch=None,
+                            lr=None,
+                            output_prefix=None,
                             classes = classes_dict,
                             out_file="confusion"
 ):
