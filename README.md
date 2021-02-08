@@ -76,7 +76,6 @@ validate_objs = read_data('data/multi_labeled_split_datasets/question_2_validate
 ```
 The end-prompt used for the default template (generated when conversations are collected) is `f"{new_line}--{new_line}Question: Does {name} like {topic}? {new_line}Answer:"`. If you want to create your own prompt, you can write your own function; `_prepare_conv_template` function in `sportsbot.datasets` might be a useful template.
 
-```
 To add labels to `Conversation` objects' templates for feature training, you can use `prepare_labeled_datasets`, or write your own simple function if the specifics of this one don't work for you.
 
 ```sh
