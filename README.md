@@ -1,6 +1,6 @@
 # sportsbot
 
-A tool for collecting Twitter conversations, fien-tuning and testing sentiment with GPT2 models from Huggingface's transformer library.
+A collection of functions for collecting Twitter conversations, fine-tuning and testing sentiment with GPT2 models from Huggingface's transformer library.
 
 ## Getting Started
 
