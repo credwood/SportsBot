@@ -160,7 +160,7 @@ for count, stats in enumerate(conversations_list):
 
 Label dictionary example:
 
-If you want to use your own label conversion dictionary, follow the same format and include the same three sub-dictionaries, even if some have dummy values. `"bucketed_values"` is used to calculate the soft accuracy and the `"baseline_accuracy"` value tracks the maximum accuracy the validation dataste would reach if the model converged to the dominant label in the fine-tuning dataset.
+If you want to use your own label conversion dictionary, follow the same format and include the same three sub-dictionaries, even if some have dummy values. `"bucketed_values"` is used to calculate the soft accuracy and the `"baseline_accuracy"` value tracks the maximum accuracy the validation dataste would reach if the model converges to the dominant label in the fine-tuning dataset.
 
 ```sh
 label_dict = {"all_values": {
