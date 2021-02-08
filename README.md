@@ -74,20 +74,10 @@ from sportsbot.datasets import read_data
 validate_objs = read_data('data/multi_labeled_split_datasets/question_2_validate.jsonl')
 
 ```
-If you want to create your datasets with a prompt different from the one specified when collecting the data, use `_prepare_conv_template` which will return a `Conversation` object with the new template in the `template` field.
+The end-prompt used for the default template (generated when conversations are collected) is `f"{new_line}--{new_line}Question: Does {name} like {topic}? {new_line}Answer:"`. If you want to create your own prompt, you can write your own function; `_prepare_conv_template` function in `sportsbot.datasets` might be a useful template.
 
-```sh
-
-from sportsbot.datasets importm_prepare_conv_template
-
-_prepare_conv_template(conversation_obj, #this should be a list of `Tweet` objects, i.e. `conversation.thread`
-                        topic,
-                        question=None, # 1-5 integer specifying question number
-                        end_prompt=None, # your custom prompt
-                        conv_obj=Conversation #send the full `Conversation` object if you already have labels in `conv_obj`.label
-)
 ```
-To add labels to templates for `Conversation` objects for feature training, use `prepare_labeled_datasets`. If you want to keep the labels as integer values, set numeric to `True`.
+To add labels to `Conversation` objects' templates for feature training, you can use `prepare_labeled_datasets`, or write your own simple function if the specifics of this one don't work for you.
 
 ```sh
 from sportsbot.dataset import prepare_labeled_datasets
@@ -107,27 +97,27 @@ from sportsbot.finetune import train
 
 model = train(
     dataset, # either `Conversation` obects or templates
-    question, # a string eg "Q1", for confusion matrix generation but can be easily customized
+    question, # a string eg "Q1". Used for confusion matrix generation but can be easily customized for generic data.
     validation_set=None, # not necessary if `eval_between_epochs` set to False
-    validation_labels=None, # same as `validation_set`
-    labels_dict=label_dict, #default is dict for all labels for all questions
+    validation_labels=None, # not necessary if `eval_between_epochs` set to False
+    labels_dict=label_dict, # default is dict for all labels for all five questions 
     model=GPT2LMHeadModel, # can be any instantiated GPT2 model
     tokenizer=GPT2Tokenizer, # can be any instantiated GPT2 tokenizer
     batch_size=1, # can't go higher with Colab
     epochs=4, # used for gradient accumulaton because of batch size constraints on Colab
-    lr=2e-5,
-    max_seq_len=1024, # base this one model word embedding size
-    warmup_steps=5000,
-    gpt2_type="gpt2",
+    lr=2e-5, #learning rate
+    max_seq_len=1024, # base this on size of model word embedding
+    warmup_steps=5000, # scheduler warm up steps
+    gpt2_type="gpt2", # specify which GPT-2 model
     device="cuda",
-    output_dir=".",
-    output_prefix="gpt2_fintune",
+    output_dir=".", # directory in which to save checkpointed model weights
+    output_prefix="gpt2_fintune", # file name of checkpointed model weights
     save_model_on_epoch=True,
-    eval_between_epochs=True,
-    validation_file="validation",
+    eval_between_epochs=True, # if `True`, will save a json file of validation statistics
+    validation_file="validation", # name of validation file
     download=True, # if `model` parameter is an instantiated model, set to False else pre-trained model weights and tokenizer provided by Huggingface will be downloaded
     foreign_data=False, # True if dataset is not a list of `Conversation` objects
-    plot_loss=True,
+    plot_loss=True, # will plot loss and accuracy for validation and fine-tuning datasets for each epoch, will save the figure as `f"loss_accuracy_graph_{output_prefix}.png"`
     prompt=None, # if dataset is not a list of `Conversation` objects, provide prompt for label masking
 )
 
@@ -137,13 +127,13 @@ For models that have been feature trained or for zero-shot testing, use `predict
 
 ```sh
 conversations = predict(test_convs, #a list of either conversations or templates
-            tokenizer,
-            model,
+            tokenizer, # instantiated tokenizer
+            model, # instantiated model
             device="cuda",
-            num_top_softmax=20, # return top-k
+            num_top_softmax=20, # will save top-20
             json_file_out='add_stats_output.jsonl',
             labels=None, # labels for `test_convs`, ordered with respect to `test_convs`
-            labels_dict=None,
+            labels_dict=None, # add your label conversion dictionary. see example below.
             foreign_data=False, # false is test_convs are `Conversation` objects
             logit_labels_only=False #probability taken only for classification labels
         )
@@ -152,7 +142,7 @@ Visualization functions such as `create_confusion_matrix` can be found in `sport
 
 ```sh
 from sportsbot.finetune import create_confusion_matrix
-#labels_dict_neutral is the labels conversion dictionary for this dataset
+#labels_dict_neutral is the labels conversion dictionary for this dataset (see example below)
 #`conversations`` is a list of validation data returned by `predict`
 
 for count in range(len(conversations)):
@@ -168,4 +158,43 @@ for count in range(len(conversations)):
                                 output_prefix="model_detals",
                                 out_file="output_file_name"
         )
+```
+
+Label dictionary example:
+
+If you want to use your own label conversion dictionary, follow the same format and include the same three sub-dictionaries, even if some have dummy values. `"bucketed_values"` is used to calculate the soft accuracy and the `"baseline_accuracy"` value tracks the maximum accuracy the validation dataste would reach if the model converged to the dominant label in the fine-tuning dataset.
+
+```sh
+label_dict = {"all_values": {
+                  1: " No",
+                  2: " Remote",
+                  3: " Unsure",
+                  4: " Probably",
+                  5: " Yes",
+                  6: " Neutral",
+                  7: " None",
+                  8: " Positive",
+                  9: " Defensive",
+                  10: " Negative",
+                  11: " Opposition",
+                  12: " Discussion",
+                  13: " Agreement"
+              },
+              "bucketed_labels":{
+                  1: [" No", " Remote"],
+                  2: [" No", " Remote"],
+                  3: [" Unsure"],
+                  4: [" Probably", " Yes"],
+                  5: [" Probably"," Yes"] ,
+                  6: [" Neutral", " None"],
+                  7: [" None", " Neutral"],
+                  8: [" Positive"],
+                  9: [" Defensive"],
+                  10: [" Negative"],
+                  11: [" Opposition",],
+                  12: [" Discussion"],
+                  13: [" Agreement"]    
+              },
+              "baseline_accuracy": 0.333
+}
 ```
