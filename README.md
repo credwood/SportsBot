@@ -1,6 +1,6 @@
 # sportsbot
 
-A tool for streaming Twitter arguments/discussions and using a few-shot-trained GPT-2 model to classify which side of the argument a randomly chosen participant (randomly chosen for now) is on.
+A tool for collecting Twitter conversations, fien-tuning and testing sentiment with GPT2 models from Huggingface's transformer library.
 
 ## Getting Started
 
@@ -60,45 +60,112 @@ data = get_conversations(search_terms,
                         max_conversation_length=10):
 ```
 
-This function requires a search phrase, a list of words and/or phrases that should not appear in the conversation and a path to the file in which to store the `Conversation` objects. The default file is `output.jsonl`, which will be in the `sportsbot` folder. `Conversation` objects will contain each conversation in template form; you can either pass this into the `predict` function, or you can label the data for feature training.
+This function requires a search phrase, a list of words and/or phrases that should not appear in the conversation and a path to the file in which to store the `Conversation` objects. The default file is `output.jsonl`, which will be in the `sportsbot` folder by default. `Conversation` objects will contain each conversation in template form; you can either pass this into the `predict` function, or you can label the data for feature training.
 
-## Labeling Data and Training Models
+## Labeling Data and Fine-tuning Models
 
+To load the jsonl file of your collected data:
+
+```sh
+from sportsbot.datasets import read_data
+
+#`validate_objs` will be a list of Conversation ojects.
+
+validate_objs = read_data('data/multi_labeled_split_datasets/question_2_validate.jsonl')
+
+```
+If you want to create your datasets with a prompt different from the one specified when collecting the data, use `_prepare_conv_template` which will
+
+```sh
+
+from sportsbot.datasets importm_prepare_conv_template
+
+_prepare_conv_template(conversation_obj, #this should be a list of `Tweet` objects, i.e. `conversation.thread`
+                        topic,
+                        question=None, # 1-5 integer specifying question number
+                        end_prompt=None, # your custom prompt
+                        conv_obj=Conversation #send the full `Conversation` object if you already have labels in `conv_obj`.label
+)
+```
 To add labels to templates for `Conversation` objects for feature training, use `prepare_labeled_datasets`. If you want to keep the labels as integer values, set numeric to `True`.
 
 ```sh
 from sportsbot.dataset import prepare_labeled_datasets
 
-prepare_labeled_datasets(conversations, labels, jsonl_file='labeled_data.jsonl', numeric=False)
+prepare_labeled_datasets(conversations, #list conversation objects
+                        labels, #list of lables, ordered by the conversations objects list
+                        jsonl_file='labeled_data.jsonl',
+                        label_dict=None #make sure to send a label conversion dictionary
+)
 ```
 
-For few-shot training, you can create a list of labels for the testing sets and run `few_shot_test`:
+For fine-tuning with `Conversation` objects or foreign data:
 
 ```sh
-from sportsbot.inference import few_shot_train, download_model_tokenizer
 
-model, tokenizer = download_model_tokenizer()
-training_data = few_shot_test(test_data,
-                    topic,
-                    training_conversations,
-                    training_labels,
-                    tokenizer,
-                    model,
-                    num_top_softmax=15,
-                    test_labels=False,
-                    jsonlines_file_out='add_stats_output.jsonl'
-    ):
+from sportsbot.finetune import train
+
+model = train(
+    dataset, # either `Conversation` obects or templates
+    question, # a string eg "Q1", for confusion matrix generation but can be easily customized
+    validation_set=None, # not necessary if `eval_between_epochs` set to False
+    validation_labels=None, # same as `validation_set`
+    labels_dict=label_dict, #default is dict for all labels for all questions
+    model=GPT2LMHeadModel, # can be any instantiated GPT2 model
+    tokenizer=GPT2Tokenizer, # can be any instantiated GPT2 tokenizer
+    batch_size=1, # can't go higher with Colab
+    epochs=4, # used for gradient accumulaton because of batch size constraints on Colab
+    lr=2e-5,
+    max_seq_len=1024, # base this one model word embedding size
+    warmup_steps=5000,
+    gpt2_type="gpt2",
+    device="cuda",
+    output_dir=".",
+    output_prefix="gpt2_fintune",
+    save_model_on_epoch=True,
+    eval_between_epochs=True,
+    validation_file="validation",
+    download=True, # if `model` parameter is an instantiated model, set to False else pre-trained model weights and tokenizer provided by Huggingface will be downloaded
+    foreign_data=False, # True if dataset is not a list of `Conversation` objects
+    plot_loss=True,
+    prompt=None, # if dataset is not a list of `Conversation` objects, provide prompt for label masking
+)
+
 ```
 
-For each conversation, the function will write a `ConversationPrompt` object to the `jsonlines_file_out` file. Each object will contain the conversation in template-form (without the training conversations) and a list of the 15 tokens with the largest SoftMax values. The function will return the batch accuracy, 15 largest SoftMax values for each conversation and a list of (model predictions vs labels).
-
-For models that have been feature trained, use `predict`:
+For models that have been feature trained or for zero-shot testing, use `predict`:
 
 ```sh
-conversations = predict(test_convs,
+conversations = predict(test_convs, #a list of either conversations or templates
             tokenizer,
             model,
-            num_top_softmax=15,
-            jsonlines_file_out='add_stats_output.jsonl'
-        ):
+            device="cuda",
+            num_top_softmax=20, # return top-k
+            json_file_out='add_stats_output.jsonl',
+            labels=None, # labels for `test_convs`, ordered with respect to `test_convs`
+            labels_dict=None,
+            foreign_data=False, # false is test_convs are `Conversation` objects
+            logit_labels_only=False #probability taken only for classification labels
+        )
+```
+Visualization functions such as `create_confusion_matrix` can be found in `sportsbot.finetune`, and can be used as stand alone functions on saved validation data:
+
+```sh
+from sportsbot.finetune import create_confusion_matrix
+#labels_dict_neutral is the labels conversion dictionary for this dataset
+#`conversations`` is a list of validation data returned by `predict`
+
+for count in range(len(conversations)):
+    for stats in conversations: 
+        ground_truth = [labels_dict_neutral["all_values"][stats[str(index)][2]] for index in range(len(stats)-5)]
+        model_predictions = [stats[str(index)][3][0][0] for index in range(len(stats)-5)]
+        create_confusion_matrix(
+                                ground_truth,
+                                model_predictions,
+                                "Q2",
+                                epoch=count,
+                                lr=2e-5,
+                                output_prefix="model_detals",
+                                out_file="output_file_name"
+        )
 ```
