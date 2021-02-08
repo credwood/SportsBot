@@ -1,4 +1,4 @@
-# Training Data
+# Fine-tuning Data
 
 To read in all of the data in a folder:
 
