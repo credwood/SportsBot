@@ -235,7 +235,8 @@ def train(
         #top_predicts = pd.DataFrame.from_dict(all_model_responses[stat])
         #print(f"epoch {stat+1}: ")
         #dsp(top_predicts)
-    fig.savefig(f"loss_accuracy_graph_{output_prefix}.png")
+    if plot_loss:
+        fig.savefig(f"loss_accuracy_graph_{output_prefix}.png")
     return model
 
 def create_batches(data, batch_size, max_seq_len):

@@ -142,21 +142,20 @@ Visualization functions such as `create_confusion_matrix` can be found in `sport
 ```sh
 from sportsbot.finetune import create_confusion_matrix
 #labels_dict_neutral is the labels conversion dictionary for this dataset (see example below)
-#`conversations`` is a list of validation data returned by `predict`
+#`conversations_list`` is a list of validation data returned from multiple runs of `predict`
 
-for count in range(len(conversations)):
-    for stats in conversations: 
-        ground_truth = [labels_dict_neutral["all_values"][stats[str(index)][2]] for index in range(len(stats)-5)]
-        model_predictions = [stats[str(index)][3][0][0] for index in range(len(stats)-5)]
-        create_confusion_matrix(
-                                ground_truth,
-                                model_predictions,
-                                "Q2",
-                                epoch=count,
-                                lr=2e-5,
-                                output_prefix="model_detals",
-                                out_file="output_file_name"
-        )
+for count, stats in enumerate(conversations_list): 
+    ground_truth = [labels_dict_neutral["all_values"][stats[str(index)][2]] for index in range(len(stats)-5)]
+    model_predictions = [stats[str(index)][3][0][0] for index in range(len(stats)-5)]
+    create_confusion_matrix(
+                            ground_truth,
+                            model_predictions,
+                            "Q2",
+                            epoch=count,
+                            lr=2e-5,
+                            output_prefix="model_detals",
+                            out_file="output_file_name"
+    )
 ```
 
 Label dictionary example:
