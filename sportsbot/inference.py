@@ -103,7 +103,7 @@ def predict(test_convs,
         print(f"accuracy: {conversations['accuracy']}")
     with open(json_file_out, "w") as dump:
         json.dump(conversations, dump, indent=4)
-    return conversations
+    return conversations if labels is not none else top_softmax
 
 def _calculate_accuracy(labels, model_answers, labels_dict):
     correct = 0.
