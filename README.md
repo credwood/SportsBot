@@ -74,7 +74,7 @@ from sportsbot.datasets import read_data
 validate_objs = read_data('data/multi_labeled_split_datasets/question_2_validate.jsonl')
 
 ```
-If you want to create your datasets with a prompt different from the one specified when collecting the data, use `_prepare_conv_template` which will
+If you want to create your datasets with a prompt different from the one specified when collecting the data, use `_prepare_conv_template` which will return a `Conversation` object with the new template in the `template` field.
 
 ```sh
 
