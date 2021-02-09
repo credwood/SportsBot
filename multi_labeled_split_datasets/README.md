@@ -1,6 +1,6 @@
 # Fine-tuning Data
 
-To read in all of the data in a folder:
+To read in the data of a specific file:
 
 ```sh
 import os
