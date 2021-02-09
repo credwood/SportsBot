@@ -325,7 +325,7 @@ def create_confusion_matrix(
                             lr=None,
                             output_prefix=None,
                             classes = classes_dict,
-                            out_file="confusion"
+                            out_file="confusion.png"
 ):
     """ 
     creates and plots a confusion matrix given two list (ground_truths and model predictions)
