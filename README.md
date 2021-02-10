@@ -138,14 +138,14 @@ conversations = predict(test_convs, #a list of either conversations or templates
         )
 ```
 
-The returned (or saved) validation dictionary contains:
+The returned (or saved) validation dictionary, `conversations`, contains:
 
-for each conversation:
+for the ith conversation:
 
 ```sh
 conversations[str(i)] = [tweet_template, all_label_softmax, label, top_softmax] #a list of the template tested, softmax values for all labels, the ground truth value, the top 20 (default) softmax values
 ```
-for entire dataset:
+for the entire dataset:
 
 ```sh
 conversations["accuracy"] # accuracy of input dataset
