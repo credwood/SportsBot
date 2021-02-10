@@ -4,7 +4,7 @@ A collection of functions for collecting Twitter conversations, fine-tuning and 
 
 ## Getting Started
 
-To run this in google colab, you must first use colab-env to set up a vars.env file with Twitter API keys. The following steps are from [This tutorial](https://colab.research.google.com/github/apolitical/colab-env/blob/master/colab_env_testbed.ipynb#scrollTo=2rz2V-k1BZY9).
+If you want to use google colab to connect to Twitter's API to collect conversations, you must first use colab-env to set up a vars.env file with Twitter API keys. The following steps are from [This tutorial](https://colab.research.google.com/github/apolitical/colab-env/blob/master/colab_env_testbed.ipynb#scrollTo=2rz2V-k1BZY9).
 
 1. To install, run:
 
