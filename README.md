@@ -60,7 +60,7 @@ data = get_conversations(search_terms,
                         max_conversation_length=10):
 ```
 
-This function requires a search phrase, a list of words and/or phrases that should not appear in the conversation and a path to the file in which to store the `Conversation` objects. The default file is `output.jsonl`, which will be in the `sportsbot` folder by default. `Conversation` objects will contain each conversation in template form; you can either pass this into the `predict` function, or you can label the data for feature training.
+This function returns a list of `Conversation` objects. It requires a search phrase (`search_terms`), a list of words and/or phrases that should not appear in the conversation (`template_topc`), the topic that should be used for the template (`template_topic`) and a path to the file in which to store the `Conversation` objects. The default file is `output.jsonl`, which will be in the `sportsbot` folder by default. `Conversation` objects will contain each conversation in template form; you can either pass this into the `predict` function, or you can label the data for feature training.
 
 ## Labeling Data and Fine-tuning Models
 
@@ -76,19 +76,19 @@ validate_objs = read_data('data/multi_labeled_split_datasets/question_2_validate
 ```
 The end-prompt used for the default template (generated when conversations are collected) is `f"{new_line}--{new_line}Question: Does {name} like {topic}? {new_line}Answer:"`. If you want to create your own prompt, you can write your own function; `_prepare_conv_template` function in `sportsbot.datasets` might be a useful template.
 
-To add labels to `Conversation` objects' templates for feature training, you can use `prepare_labeled_datasets`, or write your own simple function if the specifics of this one don't work for you.
+To add labels to `Conversation` objects' templates for feature training, you can use `prepare_labeled_datasets`, or write your own simple function if the specifics of this one don't work for you. This function will return (and save) a list of the labeled `Conversation` objects.
 
 ```sh
 from sportsbot.dataset import prepare_labeled_datasets
 
-prepare_labeled_datasets(conversations, #list conversation objects
+labeled_conversations = prepare_labeled_datasets(conversations, #list conversation objects
                         labels, #list of lables, ordered by the conversations objects list
                         jsonl_file='labeled_data.jsonl',
                         label_dict=None #make sure to send a label conversion dictionary
 )
 ```
 
-For fine-tuning with `Conversation` objects or foreign data:
+For fine-tuning with `Conversation` objects or foreign data use `train` from sportsbot.finetune. The function will return the fine-tuned model. You have the option to save validation statistics, graphs and check-pointed wights:
 
 ```sh
 
@@ -122,7 +122,7 @@ model = train(
 
 ```
 
-For models that have been feature trained or for zero-shot testing, use `predict`:
+For models that have been feature trained or for zero-shot testing, use `predict`. This funcion will return (and save) a large dictionary of validation statistics for each conversation, as well as statistics for the entire dataset:
 
 ```sh
 conversations = predict(test_convs, #a list of either conversations or templates
@@ -137,6 +137,24 @@ conversations = predict(test_convs, #a list of either conversations or templates
             logit_labels_only=False #probability taken only for classification labels
         )
 ```
+
+The returned (or saved) validation dictionary contains:
+
+for each conversation:
+
+```sh
+conversations[str(i)] = [tweet_template, all_label_softmax, label, top_softmax] #a list of the template tested, softmax values for all labels, the ground truth value, the top 20 (default) softmax values
+```
+for entire dataset:
+
+```sh
+conversations["accuracy"] # accuracy of input dataset
+conversations["soft_accuracy"] # soft accuracy of input dataset
+conversations["validation_loss"] # loss for predicted token only
+conversations["hist_data"] = [Counter(labels), Counter(answers)] # count of ground truth and predicted values
+conversations["label_softmaxes"] # dictionary of average softmax values for each of the class labels
+```
+
 Visualization functions such as `create_confusion_matrix` can be found in `sportsbot.finetune`, and can be used as stand alone functions on saved validation data:
 
 ```sh
