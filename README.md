@@ -2,6 +2,8 @@
 
 A collection of functions for collecting Twitter conversations, fine-tuning and testing sentiment with GPT2 models from Huggingface's transformer library.
 
+NOTE: Twitter recently upgraded their API but there hasn't been a Tweepy release that addresses the changes. When there is, I will upgrade this code.
+
 ## Getting Started
 
 If you want to use google colab to connect to Twitter's API to collect conversations, you must first use colab-env to set up a vars.env file with Twitter API keys. The following steps are from [This tutorial](https://colab.research.google.com/github/apolitical/colab-env/blob/master/colab_env_testbed.ipynb#scrollTo=2rz2V-k1BZY9).
