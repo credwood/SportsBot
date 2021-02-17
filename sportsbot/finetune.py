@@ -120,6 +120,8 @@ def train(
     model = model.to(device)
     model.train()
 
+    dataset = [conv for conv in dataset if len(tokenizer.encode(conv.template)) < max_seq_len] if not foreign_data else dataset
+
     optimizer = AdamW(model.parameters(), lr=lr,weight_decay=0.0)
     scheduler = get_linear_schedule_with_warmup(
         optimizer, num_warmup_steps=warmup_steps, num_training_steps=-1
@@ -157,11 +159,9 @@ def train(
         random.shuffle(dataset)
 
         print(f"Training epoch {epoch+1}")
-        #batched_dataset = create_batches(dataset,batch_size,max_seq_len)
-        batched_dataset = [conv for conv in dataset if len(tokenizer.encode(conv.template)) < max_seq_len] if not foreign_data else dataset
-        for index, batch in tqdm(enumerate(batched_dataset),ascii=True, desc="current batch"):
+        
+        for index, batch in tqdm(enumerate(dataset),ascii=True, desc="current batch"):
 
-            #input_tensor = input_tensor.to(device)
             batched_tensors, labels = tokenize_data(batch, tokenizer, device, foreign_data, prompt)
             outputs = model(batched_tensors, labels=labels)
             loss = outputs[0]
@@ -172,13 +172,13 @@ def train(
             current_loss_last_token = F.cross_entropy(logits_last_token.view(-1, logits_last_token.size(-1)), labels[-1].view(-1))
             running_loss += current_loss_last_token.item()
 
-            if (index+1)%batch_size==0 or index == len(batched_dataset)-1:
+            if (index+1)%batch_size==0 or index == len(dataset)-1:
                 optimizer.step()
                 scheduler.step()
                 optimizer.zero_grad()
                 model.zero_grad()
 
-            if index == len(batched_dataset)-1:
+            if index == len(dataset)-1:
                 acc_loss.append(running_loss/(index+1))
                 running_loss = 0
                 #print(f"loss on {index} iteration of the {epoch} epoch: {loss_val}")
@@ -187,7 +187,8 @@ def train(
             model.eval()
             model_stats = predict(validation_set,
                                     tokenizer,
-                                    model,json_file_out=validation_file+f"_{epoch}",
+                                    model,
+                                    json_file_out=validation_file+f"_{epoch}",
                                     labels=validation_labels,
                                     labels_dict=labels_dict,
                                     foreign_data=foreign_data
@@ -248,8 +249,7 @@ def create_batches(data, batch_size, max_seq_len):
     return data_
 
 def tokenize_data(conversation, tokenizer, device, foreign_data, prompt):
-    """returns a list of tokenized torch tensors"""
-    # padding_value can be whatever...
+    """returns two lists of tokenized torch tensors: inputs and labels"""
     tokens = tokenizer.encode(conversation.template) if not foreign_data else tokenizer.encode(conversation)
     label_check = " " + conversation.template.split(" ")[-1] if not foreign_data else " " + conversation.split(" ")[-1]
     assert len(tokenizer.encode(label_check)) == 1
