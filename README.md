@@ -71,12 +71,13 @@ To load jsonl `Conversation` files:
 ```sh
 from sportsbot.datasets import read_data
 
-#`validate_objs` will be a list of `Conversation` ojects with templates for validating models fine-tuned for Question 2.
+#`validate_objs` will be a list of `Conversation` ojects with
+# templates for validating models fine-tuned for Question 2.
 
 validate_objs = read_data('data/multi_labeled_split_datasets/question_2_validate.jsonl')
 
 ```
-The end-prompt used for the default template (generated when conversations are collected) is `f"{new_line}--{new_line}Question: Does {name} like {topic}? {new_line}Answer:"`. If you want to create your own prompt, you can write your own function; `_prepare_conv_template` function in `sportsbot.datasets` might be a useful template.
+The end-prompt used for the default template (generated when conversations are collected) is `f"{new_line}--{new_line}Question: Does {name} like {topic}? {new_line}Answer:"`. If you want to create your own prompt, you can write your own function; `_prepare_conv_template` function in `sportsbot.datasets` might be a useful starting point.
 
 To add labels to `Conversation` objects' templates for feature training, you can use `prepare_labeled_datasets`, or write your own simple function if the specifics of this one don't work for you. This function will return (and save) a list of the labeled `Conversation` objects.
 
@@ -86,11 +87,11 @@ from sportsbot.dataset import prepare_labeled_datasets
 labeled_conversations = prepare_labeled_datasets(conversations, #list conversation objects
                         labels, #list of lables, ordered by the conversations objects list
                         jsonl_file='labeled_data.jsonl',
-                        label_dict=None #make sure to send a label conversion dictionary
+                        label_dict=None #make sure to send a label conversion dictionary, even if it's just an identity map.
 )
 ```
 
-For fine-tuning with `Conversation` objects or foreign data use `train` from sportsbot.finetune. The function will return the fine-tuned model. You have the option to save validation statistics, graphs and check-pointed wights:
+For fine-tuning with `Conversation` objects or foreign data use `train` from sportsbot.finetune. The function will return the fine-tuned model. You have the option to save validation statistics, graphs and check-pointed weights:
 
 ```sh
 
@@ -142,10 +143,11 @@ conversations = predict(test_convs, #a list of either conversations or templates
 
 The returned (or saved) validation dictionary, `conversations`, contains:
 
-for the ith conversation:
+for the ith conversation the dictionary contains: a list of the template tested, softmax values for all labels, the ground truth value, the top 20 (default) softmax values
 
+To access data for the ith conversation:
 ```sh
-conversations[str(i)] = [tweet_template, all_label_softmax, label, top_softmax] #a list of the template tested, softmax values for all labels, the ground truth value, the top 20 (default) softmax values
+conversations[str(i)] = [tweet_template, all_label_softmax, label, top_softmax]
 ```
 for the entire dataset:
 
@@ -157,12 +159,14 @@ conversations["hist_data"] = [Counter(labels), Counter(answers)] # count of grou
 conversations["label_softmaxes"] # dictionary of average softmax values for each of the class labels
 ```
 
-Visualization functions such as `create_confusion_matrix` can be found in `sportsbot.finetune`, and can be used as stand alone functions on saved validation data:
+Visualization functions such as `create_confusion_matrix` can be found in `sportsbot.finetune`, and can be used as stand alone functions on validation data:
 
 ```sh
 from sportsbot.finetune import create_confusion_matrix
 #labels_dict_neutral is the labels conversion dictionary for this dataset (see example below)
 #`conversations_list`` is a list of validation data returned from multiple runs of `predict`
+#"Q2" is used to identify which labels to use for the matrix.
+#You can customize this by changing specifying your own `classes` dictionary. 
 
 for count, stats in enumerate(conversations_list): 
     ground_truth = [labels_dict_neutral["all_values"][stats[str(index)][2]] for index in range(len(stats)-5)]
@@ -174,13 +178,14 @@ for count, stats in enumerate(conversations_list):
                             epoch=count,
                             lr=2e-5,
                             output_prefix="model_detals",
+                            classes = classes_dict,
                             out_file="output_file_name"
     )
 ```
 
 Label dictionary example:
 
-If you want to use your own label conversion dictionary, follow the same format and include the same three sub-dictionaries, even if some have dummy values. `"bucketed_values"` is used to calculate the soft accuracy and the `"baseline_accuracy"` value tracks the maximum accuracy the validation dataste would reach if the model converges to the dominant label in the fine-tuning dataset.
+If you want to use your own label conversion dictionary, follow the same format and include the same three sub-dictionaries, even if some have dummy or identity values. `"bucketed_values"` is used to calculate the soft accuracy and the `"baseline_accuracy"` value tracks the maximum accuracy the validation dataste would reach if the model converges to the dominant label in the fine-tuning dataset.
 
 ```sh
 label_dict = {"all_values": {
