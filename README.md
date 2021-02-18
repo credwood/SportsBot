@@ -66,12 +66,12 @@ This function returns a list of `Conversation` objects. It requires a search phr
 
 ## Labeling Data and Fine-tuning Models
 
-To load the jsonl file of your collected data:
+To load jsonl `Conversation` files:
 
 ```sh
 from sportsbot.datasets import read_data
 
-#`validate_objs` will be a list of Conversation ojects.
+#`validate_objs` will be a list of `Conversation` ojects with templates for validating models fine-tuned for Question 2.
 
 validate_objs = read_data('data/multi_labeled_split_datasets/question_2_validate.jsonl')
 
