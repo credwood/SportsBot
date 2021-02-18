@@ -18,6 +18,11 @@ from IPython import display
 #from IPython.display import display as dsp
 from .inference import predict
 
+# these dictionaries are not modified by the code
+# Ideally users will provdide their own label mappings
+# but these are provided as defualt `labels_dicts` and 
+# `class_dict` values. Please see the main README for more information
+
 classes_dict = {
                 "Q1": {
                 ' No': 0,
