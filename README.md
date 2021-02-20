@@ -84,10 +84,10 @@ To add labels to `Conversation` objects' templates for feature training, you can
 ```sh
 from sportsbot.dataset import prepare_labeled_datasets
 
-labeled_conversations = prepare_labeled_datasets(conversations, #list conversation objects
+labeled_conversations = prepare_labeled_datasets(conversations, #list of conversation objects
                         labels, #list of lables, ordered by the conversations objects list
                         jsonl_file='labeled_data.jsonl',
-                        label_dict=None #make sure to send a label conversion dictionary, even if it's just an identity map.
+                        label_dict=None #make sure to send a label conversion dictionary, even if it's just an identity map (see below for label dictionary formatting).
 )
 ```
 
@@ -99,28 +99,28 @@ from sportsbot.finetune import train
 
 model = train(
     dataset, # either `Conversation` obects or templates
-    question, # a string eg "Q1". Used for confusion matrix generation but can be easily customized for generic data.
+    question, # a string eg "Q1". Used for confusion matrix generation but can be easily customized.
     validation_set=None, # not necessary if `eval_between_epochs` set to False
     validation_labels=None, # not necessary if `eval_between_epochs` set to False
-    labels_dict=label_dict, # default is dict for all labels for all five questions 
+    labels_dict=label_dict, # default is dict for all labels for all five questions, but you should make your own (see below)
     model=GPT2LMHeadModel, # can be any instantiated GPT2 model
     tokenizer=GPT2Tokenizer, # can be any instantiated GPT2 tokenizer
-    batch_size=1, # can't go higher with Colab
-    epochs=4, # used for gradient accumulaton because of batch size constraints on Colab
+    batch_size=1, # this is used for gradient accumulation, not batch size because of Colab GPU memory limitations
+    epochs=4,
     lr=2e-5, #learning rate
-    max_seq_len=1024, # base this on size of model word embedding
+    max_seq_len=1024, # base this on size of model's word embedding
     warmup_steps=5000, # scheduler warm up steps
     gpt2_type="gpt2", # specify which GPT-2 model
     device="cuda",
     output_dir=".", # directory in which to save checkpointed model weights
-    output_prefix="gpt2_fintune", # file name of checkpointed model weights
-    save_model_on_epoch=True,
-    eval_between_epochs=True, # if `True`, will save a json file of validation statistics
+    output_prefix="gpt2_fintune", # set file name of checkpointed model weights
+    save_model_on_epoch=True, # True if you want to save checkpointed weights after each epoch
+    eval_between_epochs=True, # if True, will save a json file of validation statistics after each epoch
     validation_file="validation", # name of validation file
     download=True, # if `model` parameter is an instantiated model, set to False else pre-trained model weights and tokenizer provided by Huggingface will be downloaded
     foreign_data=False, # True if dataset is not a list of `Conversation` objects
     plot_loss=True, # will plot loss and accuracy for validation and fine-tuning datasets for each epoch, will save the figure as `f"loss_accuracy_graph_{output_prefix}.png"`
-    prompt=None, # if dataset is not a list of `Conversation` objects, provide prompt for label masking
+    prompt=None, # if dataset is not a list of `Conversation` objects, must provide the prompt used in order to mask label tokens
 )
 
 ```
@@ -141,9 +141,7 @@ conversations = predict(test_convs, #a list of either conversations or templates
         )
 ```
 
-The returned (or saved) validation dictionary, `conversations`, contains:
-
-for the ith conversation the dictionary contains: a list of the template tested, softmax values for all labels, the ground truth value, the top 20 (default) softmax values
+In the returned (or saved) validation stats dictionary, `conversations`, for the ith conversation the dictionary contains: a list containing the template tested, softmax values for all labels, the ground truth value, the top 20 (default) softmax values
 
 To access data for the ith conversation:
 ```sh
@@ -156,7 +154,7 @@ conversations["accuracy"] # accuracy of input dataset
 conversations["soft_accuracy"] # soft accuracy of input dataset
 conversations["validation_loss"] # loss for predicted token only
 conversations["hist_data"] = [Counter(labels), Counter(answers)] # count of ground truth and predicted values
-conversations["label_softmaxes"] # dictionary of average softmax values for each of the class labels
+conversations["label_softmaxes"] # dictionary of average softmax values for each of the class labels. Will probably refactor out.
 ```
 
 Visualization functions such as `create_confusion_matrix` can be found in `sportsbot.finetune`, and can be used as stand alone functions on validation data:
@@ -166,7 +164,7 @@ from sportsbot.finetune import create_confusion_matrix
 #labels_dict_neutral is the labels conversion dictionary for this dataset (see example below)
 #`conversations_list`` is a list of validation data returned from multiple runs of `predict`
 #"Q2" is used to identify which labels to use for the matrix.
-#You can customize this by changing specifying your own `classes` dictionary. 
+#You can customize this by specifying your own `classes` dictionary. See the source code for how to structure it.
 
 for count, stats in enumerate(conversations_list): 
     ground_truth = [labels_dict_neutral["all_values"][stats[str(index)][2]] for index in range(len(stats)-5)]
