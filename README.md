@@ -99,7 +99,7 @@ from sportsbot.finetune import train
 
 model = train(
     dataset, # either `Conversation` obects or templates
-    question, # a string eg "Q1". Used for confusion matrix generation but can be easily customized.
+    question, # a string eg "Q1". Used for confusion matrix generation but can be easily customized, see the classes_dict dictionary and create_confusion_matrix function in finetune.py .
     validation_set=None, # not necessary if `eval_between_epochs` set to False
     validation_labels=None, # not necessary if `eval_between_epochs` set to False
     labels_dict=label_dict, # default is dict for all labels for all five questions, but you should make your own (see below)
