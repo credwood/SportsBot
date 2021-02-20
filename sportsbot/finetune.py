@@ -96,7 +96,7 @@ def train(
     labels_dict=label_dict, #defaults to global label_dict but better to use customized
     model=GPT2LMHeadModel,
     tokenizer=GPT2Tokenizer,
-    batch_size=1,
+    batch_size=5,
     epochs=4,
     lr=2e-5,
     max_seq_len=1024,
