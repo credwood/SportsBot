@@ -141,7 +141,7 @@ conversations = predict(test_convs, #a list of either conversations or templates
         )
 ```
 
-In the returned (or saved) validation stats dictionary, `conversations`, the ith conversation the dictionary contains: a list containing the template tested, softmax values for all labels, the ground truth value, the top 20 (default) softmax values
+In the returned (or saved) validation stats dictionary, `conversations`, the ith entry in the dictionary (corresponding to the ith conversation tested) contains: a list containing the template tested, softmax values for all labels, the ground truth value, the top 20 (default) softmax values
 
 To access data for the ith conversation:
 ```sh
