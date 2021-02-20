@@ -24,6 +24,7 @@ The labels and their natural language mappings for the five questions are below.
 
 For more information on the labeling methadology, see [this document](https://docs.google.com/document/d/1UYfLlOY5_peg9ZGkIYHlY-fb7qqenyE8ml8NaiiaX1E/edit)
 
+```sh
 Question 1, Affinity for subject:
     Does {name} like {subject}? 
         (1) No
@@ -61,3 +62,4 @@ Question 5, Trolling:
         (1) No
         (3) Unsure
         (7) if not in english: None
+```
