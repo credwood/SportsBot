@@ -132,16 +132,16 @@ conversations = predict(test_convs, #a list of either conversations or templates
             tokenizer, # instantiated tokenizer
             model, # instantiated model
             device="cuda",
-            num_top_softmax=20, # will save top-20
+            num_top_softmax=20, # will save/return top-20
             json_file_out='add_stats_output.jsonl',
             labels=None, # labels for `test_convs`, ordered with respect to `test_convs`
             labels_dict=None, # add your label conversion dictionary. see example below.
-            foreign_data=False, # false is test_convs are `Conversation` objects
+            foreign_data=False, # false if test_convs are `Conversation` objects
             logit_labels_only=False #probability taken only for classification labels
         )
 ```
 
-In the returned (or saved) validation stats dictionary, `conversations`, for the ith conversation the dictionary contains: a list containing the template tested, softmax values for all labels, the ground truth value, the top 20 (default) softmax values
+In the returned (or saved) validation stats dictionary, `conversations`, the ith conversation the dictionary contains: a list containing the template tested, softmax values for all labels, the ground truth value, the top 20 (default) softmax values
 
 To access data for the ith conversation:
 ```sh
@@ -182,6 +182,8 @@ for count, stats in enumerate(conversations_list):
 ```
 
 Label dictionary example:
+
+Beow is the default label conversion dictionary made for the Twitter conversatiosn dataset.
 
 If you want to use your own label conversion dictionary, follow the same format and include the same three sub-dictionaries, even if some have dummy or identity values. `"bucketed_values"` is used to calculate the soft accuracy and the `"baseline_accuracy"` value tracks the maximum accuracy the validation dataste would reach if the model converges to the dominant label in the fine-tuning dataset.
 
