@@ -56,13 +56,12 @@ def train(
     model = model.to(device)
     model.train()
 
-    dataset = [conv for conv in dataset if len(tokenizer.encode(conv.template)) < max_seq_len] if not foreign_data else dataset
-
     optimizer = AdamW(model.parameters(), lr=lr,weight_decay=0.0)
     scheduler = get_linear_schedule_with_warmup(
         optimizer, num_warmup_steps=warmup_steps, num_training_steps=-1
     )
 
+    dataset = [conv for conv in dataset if len(tokenizer.encode(conv.template)) < max_seq_len] if not foreign_data else dataset
     #accumulating_batch_count = 0
     plt.ion()
     fig, (ax_accuracy, ax_loss, ax_labels) = plt.subplots(3, 1, figsize=(20,25), tight_layout=True)
