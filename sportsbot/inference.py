@@ -150,4 +150,4 @@ def _labels_only_logits(logits, labels, tokenizer):
     tokenized_labels = [tokenizer.encode(label)[0] for label in labels]
     filter_out = [index for index in range(len(logits)) if index not in tokenized_labels]
     _logits[...,filter_out] = -10**8
-    return _logits 
+    return F.softmax(_logits, dim=-1)
