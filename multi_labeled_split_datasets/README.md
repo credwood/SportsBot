@@ -3,7 +3,6 @@
 To read in the data of a specific file:
 
 ```sh
-import os
 from sportsbot.datasets import read_data
 
 dir_path = 'multi_labeled_split_datasets/'
@@ -11,7 +10,7 @@ dir_path = 'multi_labeled_split_datasets/'
 data = read_data(dir_path+"specific_file_name")
 ```
 
-Each `Conversation` object in the `data` list will have a fine-tuning template along with a list of labels. If the template is for question 1, conv.label[0] is the correct label and conv.label[-1] is the topic about which the quetsion is answered, conv.handle_tested is the person in the conversation about which the question is answered.
+Each `Conversation` object in the `data` list will have a fine-tuning template along with a list of labels. If the template is for question 1, conv.label[0] is the correct label; for question 2, conv.label[1] and so on. conv.label[-1] is the topic about which the quetsion is answered, conv.handle_tested is the person in the conversation about which the question is answered.
 
 If it's fine-tuning data (...train.jsonl), the natural language label will be the last token of the template (see the main README for the label dictionary used for converting numeric labels to natural language, or the questions below).
 
@@ -26,7 +25,7 @@ For more information on the labeling methadology, see [this document](https://do
 
 ```sh
 Question 1, Affinity for subject:
-    Does {name} like {subject}? 
+    Does {name} like {topic}? 
         (1) No
         (2) Remote (can’t find a better single token synonym)
         (3) Unsure
@@ -35,8 +34,8 @@ Question 1, Affinity for subject:
         (6) if neutral entity e.g. national media outlet/media outlet not explicitly pro {subject} or the leagues themselves, e.g. NFL, NBA: Neutral 
         (7) if not relevant/about fantasy or gambling/esports/not in english: None
 Question 2, Sentiment:
-    What is {name}’s sentiment about {subject} in this conversation? 
-    (pared down questions: Is {name}’s sentiment about {subject} positive, negative or neutral?)
+    What is {name}’s sentiment about {topic} in this conversation? 
+    (pared down questions: Is {name}’s sentiment about {topic} positive, negative or neutral?)
         (8) Positive
         (9) Defensive
         (6) if no bias detected or not directly addressed: Neutral
