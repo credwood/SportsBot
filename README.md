@@ -62,7 +62,9 @@ data = get_conversations(search_terms,
                         max_conversation_length=10):
 ```
 
-This function returns a list of `Conversation` objects. It requires a search phrase (`search_terms`), a list of words and/or phrases that should not appear in the conversation (`template_topc`), the topic that should be used for the template (`template_topic`) and a path to the file in which to store the `Conversation` objects. The default file is `output.jsonl`, which will be in the `sportsbot` folder by default. `Conversation` objects will contain each conversation in template form; you can either pass this into the `predict` function, or you can label the data for feature training.
+This function returns a list of `Conversation` objects. It requires a search phrase (`search_terms`); a list of words and/or phrases that should not appear in the conversation (`filter_terms`), the topic that should be used for the template (`template_topic`), a path to the file in which to store the `Conversation` objects. The default file is `output.jsonl`, which will be in the `sportsbot` folder by default. `Conversation` objects will contain each conversation in template form; you can either pass this into the `predict` function, or you can label the data for feature training.
+
+If you are connected to Twitter's free API or working on Colab/Colabl Pro I wouldn't suggest changing the `max_conversation_length` default.
 
 ## Labeling Data and Fine-tuning Models
 
