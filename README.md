@@ -76,7 +76,7 @@ from sportsbot.datasets import read_data
 #`validate_objs` will be a list of `Conversation` ojects with
 # templates for validating models fine-tuned for Question 2.
 
-validate_objs = read_data('data/multi_labeled_split_datasets/question_2_validate.jsonl')
+validate_objs = read_data('multi_labeled_split_datasets/question_2_validate.jsonl')
 
 ```
 The end-prompt used for the default template (generated when conversations are collected) is `f"{new_line}--{new_line}Question: Does {name} like {topic}? {new_line}Answer:"`. If you want to create your own prompt, you can write your own function; `_prepare_conv_template` function in `sportsbot.datasets` might be a useful starting point.
