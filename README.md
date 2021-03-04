@@ -1,6 +1,6 @@
 # sportsbot
 
-A collection of functions for collecting Twitter conversations, fine-tuning and testing sentiment with GPT2 models from Huggingface's transformer library.
+A collection of functions for collecting Twitter conversations, fine-tuning and testing sentiment with GPT-2 models from Huggingface's transformer library.
 
 NOTE: Twitter recently upgraded their API but there hasn't been a Tweepy release that addresses the changes. When there is, I will upgrade this code.
 
@@ -66,7 +66,7 @@ This function returns a list of `Conversation` objects. It requires a search phr
 
 If you are connected to Twitter's free API or working on Colab/Colabl Pro I wouldn't suggest changing the `max_conversation_length` default.
 
-## Labeling Data and Fine-tuning Models
+## Labeling data, fine-tuning and running inference
 
 To load jsonl `Conversation` files:
 
@@ -158,15 +158,16 @@ conversations["validation_loss"] # loss for predicted token only
 conversations["hist_data"] = [Counter(labels), Counter(answers)] # count of ground truth and predicted values
 conversations["label_softmaxes"] # dictionary of average softmax values for each of the class labels. Will probably refactor out.
 ```
+## Visualizations
 
 Visualization functions such as `create_confusion_matrix` can be found in `sportsbot.finetune`, and can be used as stand alone functions on validation data:
 
 ```sh
 from sportsbot.finetune import create_confusion_matrix
 #labels_dict_neutral is the labels conversion dictionary for this dataset (see example below)
-#`conversations_list`` is a list of validation data returned from multiple runs of `predict`
+#`conversations_list` is a list of validation data returned from multiple runs of `predict`
 #"Q2" is used to identify which labels to use for the matrix.
-#You can customize this by specifying your own `classes` dictionary. See the source code for how to structure it.
+#You can customize this by specifying your own `classes` dictionary. See the source code (label_dictionaries.py) for how to structure it. 
 
 for count, stats in enumerate(conversations_list): 
     ground_truth = [labels_dict_neutral["all_values"][stats[str(index)][2]] for index in range(len(stats)-5)]
@@ -182,6 +183,7 @@ for count, stats in enumerate(conversations_list):
                             out_file="output_file_name"
     )
 ```
+## Default label dictionary
 
 Label dictionary example:
 
