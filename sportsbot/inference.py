@@ -129,15 +129,6 @@ def _all_label_softmax(prob_dict, tokenizer, labels_dict):
     prob_dict = list(prob_dict.detach().cpu().numpy())
     return [{label: str(prob_dict[tokenizer.encode(label)[0]].item())} for label in labels_dict.values()]
 
-#log prob(token_j)  = logit_j - log(sum_k exp(logit_k))
-def _log_prob(logits_tensor, labels_lst, num_tokens, tokenizer):
-    _, sorted_indices = torch.sort(logits_tensor[:], descending=True)
-    sorted_indices = list(sorted_indices.detach().numpy())
-    logits = logits_tensor.detach.numpy()
-    log_probs = list(logits - log(sum(exp(logits))))
-    #converting logits into log probs shouldn't change indices...
-    return [(tokenizer.decode([index]), str(log_probs[index].item())) for index in sorted_indices[:num_tokens]]
-
 def _soft_accuracy(labels, bucketed_labels, model_answers):
     correct = 0.
     for i, answer in enumerate(labels):
