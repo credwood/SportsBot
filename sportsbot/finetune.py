@@ -101,8 +101,8 @@ def train(
             outputs = model(batched_tensors, labels=labels)
             loss = outputs[0]
             loss.backward()
-            loss_val = loss.item()
-            running_loss += loss_val
+            #loss_val = loss.item()
+            #running_loss += loss_val
             logits_last_token = outputs[1][...,-2,:][:]
             current_loss_last_token = F.cross_entropy(logits_last_token.view(-1, logits_last_token.size(-1)), labels[-1].view(-1))
             running_loss += current_loss_last_token.item()
